@@ -4,7 +4,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center glass-card rounded-3xl p-8">
       <div class="w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-      <p class="font-fredoka text-slate-300 text-sm">Cargando palabras...</p>
+      <p class="font-fredoka text-slate-300 text-sm">Cargando lección...</p>
     </div>
 
     <!-- Main Study View (Zero-scroll Mobile Fitted layout) -->
@@ -55,13 +55,14 @@
           />
         </div>
 
-        <!-- Full-Size MAIN Cover Image Container (Always displays images[0] set in Admin) -->
+        <!-- Full-Size MAIN Cover Image Container -->
         <div class="flex-1 min-h-0 my-2 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group select-none">
           <img 
             v-if="mainCoverImage" 
             :src="mainCoverImage" 
             :alt="currentWord.englishWord" 
             class="w-full h-full object-cover pointer-events-none"
+            loading="eager"
           />
           <div v-else class="text-center p-4">
             <span class="text-4xl block mb-1">🖼️</span>
@@ -175,13 +176,24 @@ const currentWord = computed(() => words.value[currentIndex.value] || {})
 const mainCoverImage = computed(() => {
   const word = currentWord.value
   if (!word || !word.images || word.images.length === 0) return null
-  return word.images[0] // The main designated cover image
+  return word.images[0]
 })
 
 const triggerHaptic = () => {
   if (navigator.vibrate) {
     navigator.vibrate(10)
   }
+}
+
+// Preload all images in RAM for instant swiping
+const preloadImages = (wordList) => {
+  if (!wordList) return
+  wordList.forEach(w => {
+    if (w.images && w.images.length > 0) {
+      const img = new Image()
+      img.src = w.images[0]
+    }
+  })
 }
 
 const handleTouchStart = (event) => {
@@ -220,6 +232,7 @@ const loadCategoryData = async () => {
     currentIndex.value = 0
 
     if (words.value.length > 0) {
+      preloadImages(words.value)
       speakCurrentWord()
     }
   } catch (error) {
@@ -233,7 +246,7 @@ const speakCurrentWord = () => {
   if (currentWord.value && currentWord.value.englishWord) {
     setTimeout(() => {
       speakEnglish(currentWord.value.englishWord, speechRate.value)
-    }, 200)
+    }, 150)
   }
 }
 

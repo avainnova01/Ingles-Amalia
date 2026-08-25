@@ -1,13 +1,15 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  getDocs, 
-  setDoc, 
-  deleteDoc, 
-  query, 
-  where 
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  where
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -26,6 +28,11 @@ export const db = getFirestore(app)
 // --- IMGBB UPLOADER (Free Cloud Image Hosting) ---
 const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || ''
 
+/**
+ * Uploads a base64 image or File to imgbb cloud storage
+ * @param {File|string} imageInput - File object or base64 string
+ * @returns {Promise<string>} Direct image URL
+ */
 export const uploadImageToImgbb = async (imageInput) => {
   if (!IMGBB_API_KEY) {
     console.warn('Falta VITE_IMGBB_API_KEY. Usando fallback local.')
@@ -70,48 +77,67 @@ export const uploadImageToImgbb = async (imageInput) => {
 // --- FIRESTORE CATEGORIES SERVICES ---
 
 export const fetchFirebaseCategories = async () => {
-  const colRef = collection(db, 'categories')
-  const snapshot = await getDocs(colRef)
-  const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-  results.sort((a, b) => (a.order || 0) - (b.order || 0))
-  return results
+  try {
+    const colRef = collection(db, 'categories')
+    const q = query(colRef, orderBy('order', 'asc'))
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  } catch (err) {
+    console.error('Error fetching Firebase categories:', err)
+    return []
+  }
 }
 
 export const saveFirebaseCategory = async (category) => {
-  const docRef = doc(db, 'categories', category.id)
-  const data = {
-    ...category,
-    order: category.order || Date.now(),
-    updatedAt: new Date().toISOString()
+  try {
+    const docRef = doc(db, 'categories', category.id)
+    await setDoc(docRef, {
+      ...category,
+      updatedAt: new Date().toISOString()
+    }, { merge: true })
+  } catch (err) {
+    console.error('Error saving Firebase category:', err)
   }
-  await setDoc(docRef, data, { merge: true })
-  console.log('Category saved to Firebase Firestore:', category.id)
 }
 
 export const deleteFirebaseCategory = async (id) => {
-  await deleteDoc(doc(db, 'categories', id))
-  console.log('Category deleted from Firebase Firestore:', id)
+  try {
+    await deleteDoc(doc(db, 'categories', id))
+  } catch (err) {
+    console.error('Error deleting Firebase category:', err)
+  }
 }
 
 // --- FIRESTORE WORDS SERVICES ---
 
 export const fetchFirebaseWordsByCategory = async (categoryId) => {
-  const colRef = collection(db, 'words')
-  const q = query(colRef, where('categoryId', '==', categoryId))
-  const snapshot = await getDocs(q)
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  try {
+    const colRef = collection(db, 'words')
+    const q = query(colRef, where('categoryId', '==', categoryId))
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  } catch (err) {
+    console.error('Error fetching Firebase words:', err)
+    return []
+  }
 }
 
 export const saveFirebaseWord = async (word) => {
-  const docRef = doc(db, 'words', word.id)
-  await setDoc(docRef, {
-    ...word,
-    updatedAt: new Date().toISOString()
-  }, { merge: true })
-  console.log('Word saved to Firebase Firestore:', word.id)
+  try {
+    const docRef = doc(db, 'words', word.id)
+    await setDoc(docRef, {
+      ...word,
+      updatedAt: new Date().toISOString()
+    }, { merge: true })
+  } catch (err) {
+    console.error('Error saving Firebase word:', err)
+  }
 }
 
 export const deleteFirebaseWord = async (id) => {
-  await deleteDoc(doc(db, 'words', id))
-  console.log('Word deleted from Firebase Firestore:', id)
+  try {
+    await deleteDoc(doc(db, 'words', id))
+  } catch (err) {
+    console.error('Error deleting Firebase word:', err)
+  }
 }
