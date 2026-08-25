@@ -12,17 +12,38 @@
           Gestión de Vocabulario e Imágenes
         </h2>
         <p class="text-sm text-slate-400">
-          Crea grupos, añade palabras en inglés y marca la imagen principal para la lección de estudio.
+          Crea grupos, añade palabras en inglés y sincroniza directamente con tu proyecto Firebase Cloud.
         </p>
       </div>
 
-      <button 
-        @click="openCategoryModal()" 
-        class="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-fredoka font-semibold text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
-      >
-        <Plus class="w-5 h-5" />
-        <span>+ Nueva Categoría</span>
-      </button>
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Cloud Sync Button -->
+        <button 
+          @click="handleForceSync" 
+          :disabled="isSyncing"
+          class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-fredoka font-semibold text-xs transition flex items-center gap-2 disabled:opacity-50"
+        >
+          <Cloud :class="['w-4 h-4 text-emerald-400', isSyncing ? 'animate-spin' : '']" />
+          <span>{{ isSyncing ? 'Sincronizando...' : '☁️ Forzar Sincronización Firebase' }}</span>
+        </button>
+
+        <button 
+          @click="openCategoryModal()" 
+          class="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-fredoka font-semibold text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
+        >
+          <Plus class="w-5 h-5" />
+          <span>+ Nueva Categoría</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Firebase Connection Banner -->
+    <div v-if="syncMessage" :class="['mb-6 p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between', syncSuccess ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-200' : 'bg-rose-950/60 border-rose-500/50 text-rose-200']">
+      <div class="flex items-center gap-2">
+        <span>{{ syncSuccess ? '🟢' : '⚠️' }}</span>
+        <span>{{ syncMessage }}</span>
+      </div>
+      <button @click="syncMessage = ''" class="text-slate-400 hover:text-white">✕</button>
     </div>
 
     <!-- Main Layout: Left = Categories List, Right = Words & Multi-Image Uploads for Selected Category -->
@@ -368,7 +389,6 @@
               📸 Imágenes (La 1ª foto es la principal de estudio):
             </label>
 
-            <!-- Drag and drop / file input -->
             <div class="border-2 border-dashed border-slate-700 hover:border-pink-500/80 rounded-2xl p-4 text-center bg-slate-950/60 transition cursor-pointer relative mb-3">
               <input 
                 type="file" 
@@ -386,7 +406,6 @@
               </p>
             </div>
 
-            <!-- Alternative URL input -->
             <div class="flex items-center gap-2 mb-4">
               <input 
                 v-model="newImageUrl" 
@@ -403,7 +422,6 @@
               </button>
             </div>
 
-            <!-- Preview List of Uploaded Images for this Word -->
             <div v-if="wordForm.images.length > 0" class="space-y-2 max-h-48 overflow-y-auto p-2 bg-slate-950/80 rounded-xl border border-slate-800">
               <div 
                 v-for="(img, index) in wordForm.images" 
@@ -468,8 +486,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star } from 'lucide-vue-next'
+import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star, Cloud } from 'lucide-vue-next'
 import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord } from '../services/db'
+import { syncAllLocalToFirebase, seedInitialDataIfEmpty } from '../services/seedData'
 import AudioButton from '../components/AudioButton.vue'
 
 const categories = ref([])
@@ -479,6 +498,9 @@ const selectedCategory = ref(null)
 
 const loadingCategories = ref(true)
 const loadingWords = ref(false)
+const isSyncing = ref(false)
+const syncMessage = ref('')
+const syncSuccess = ref(true)
 
 // Modals state
 const showCategoryModal = ref(false)
@@ -501,6 +523,25 @@ const wordForm = ref({
   images: []
 })
 const newImageUrl = ref('')
+
+const handleForceSync = async () => {
+  isSyncing.value = true
+  syncMessage.value = ''
+  try {
+    // Seed and sync all categories and words directly to Firebase
+    await seedInitialDataIfEmpty()
+    const res = await syncAllLocalToFirebase()
+    syncSuccess.value = true
+    syncMessage.value = `¡Sincronización Exitosa! Se enviaron ${res.categoriesSynced} categorías y ${res.wordsSynced} palabras a Firebase Firestore Cloud.`
+    await loadCategories()
+  } catch (err) {
+    console.error('Firebase sync error:', err)
+    syncSuccess.value = false
+    syncMessage.value = `Error de Firebase: ${err.message || 'Verifica las reglas de seguridad en Firebase Console.'}`
+  } finally {
+    isSyncing.value = false
+  }
+}
 
 const loadCategories = async () => {
   loadingCategories.value = true
@@ -555,9 +596,17 @@ const openCategoryModal = (cat = null) => {
 }
 
 const handleSaveCategory = async () => {
-  await saveCategory(categoryForm.value)
-  showCategoryModal.value = false
-  await loadCategories()
+  try {
+    await saveCategory(categoryForm.value)
+    showCategoryModal.value = false
+    await loadCategories()
+    syncSuccess.value = true
+    syncMessage.value = `Categoría "${categoryForm.value.name}" guardada y enviada a Firebase Firestore.`
+  } catch (err) {
+    console.error('Error saving category:', err)
+    syncSuccess.value = false
+    syncMessage.value = `Error guardando en Firebase: ${err.message}`
+  }
 }
 
 const confirmDeleteCategory = async (cat) => {
@@ -627,7 +676,7 @@ const removeFormImage = (idx) => {
 const setAsMainImage = async (word, imgIdx) => {
   const updatedImages = [...word.images]
   const selected = updatedImages.splice(imgIdx, 1)[0]
-  updatedImages.unshift(selected) // Move selected image to position 0
+  updatedImages.unshift(selected)
 
   const updatedWord = { ...word, images: updatedImages }
   await saveWord(updatedWord)
@@ -635,11 +684,19 @@ const setAsMainImage = async (word, imgIdx) => {
 }
 
 const handleSaveWord = async () => {
-  wordForm.value.categoryId = selectedCategory.value.id
-  await saveWord(wordForm.value)
-  showWordModal.value = false
-  await selectCategory(selectedCategory.value)
-  await loadCategories()
+  try {
+    wordForm.value.categoryId = selectedCategory.value.id
+    await saveWord(wordForm.value)
+    showWordModal.value = false
+    await selectCategory(selectedCategory.value)
+    await loadCategories()
+    syncSuccess.value = true
+    syncMessage.value = `Palabra "${wordForm.value.englishWord}" guardada y sincronizada con Firebase Firestore.`
+  } catch (err) {
+    console.error('Error saving word:', err)
+    syncSuccess.value = false
+    syncMessage.value = `Error al guardar en Firebase: ${err.message}`
+  }
 }
 
 const removeImageFromWord = async (word, imgIdx) => {
