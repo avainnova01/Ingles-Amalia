@@ -19,7 +19,7 @@
     <!-- Native Mobile App Bottom Navigation Bar -->
     <BottomTabBar />
 
-    <!-- Footer (Hidden on small mobile screens to keep app feel clean) -->
+    <!-- Footer -->
     <footer class="hidden sm:block border-t border-slate-800/80 py-6 text-center text-xs text-slate-400 glass-panel mt-auto">
       <p class="font-fredoka">Inglés para Amalia • Aprende jugando con imágenes y voz 🌟</p>
     </footer>
@@ -27,8 +27,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import Navbar from './components/Navbar.vue'
 import BottomTabBar from './components/BottomTabBar.vue'
+import { seedInitialDataIfEmpty } from './services/seedData'
+
+onMounted(async () => {
+  try {
+    // Automatically populate Firebase Cloud Database on app startup if empty!
+    await seedInitialDataIfEmpty()
+  } catch (e) {
+    console.error('App startup cloud sync error:', e)
+  }
+})
 </script>
 
 <style>

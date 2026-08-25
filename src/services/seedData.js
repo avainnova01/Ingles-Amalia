@@ -1,8 +1,19 @@
 import { getCategories, saveCategory, saveWord, getAllWords } from './db'
-import { saveFirebaseCategory, saveFirebaseWord } from './firebase'
+import { fetchFirebaseCategories, saveFirebaseCategory, saveFirebaseWord } from './firebase'
 
 export const seedInitialDataIfEmpty = async () => {
-  console.log('Pushing starter dataset to Firebase Firestore and local storage...')
+  try {
+    // Check if Firebase Firestore already has data
+    const fbCategories = await fetchFirebaseCategories()
+    if (fbCategories && fbCategories.length > 0) {
+      console.log('Firebase Firestore already populated with categories.')
+      return
+    }
+  } catch (e) {
+    console.warn('Checking Firebase Firestore categories:', e)
+  }
+
+  console.log('Firebase Firestore is empty. Auto-seeding starter pack to Firebase Cloud...')
 
   // Category 1: Partes de la casa
   const catHouse = {
@@ -171,12 +182,9 @@ export const seedInitialDataIfEmpty = async () => {
     await saveWord(w)
   }
 
-  console.log('Data successfully saved to Firebase Firestore cloud!')
+  console.log('Firebase Cloud database automatically populated successfully!')
 }
 
-/**
- * Force sync all local data to Firebase Firestore
- */
 export const syncAllLocalToFirebase = async () => {
   const categories = await getCategories()
   const words = await getAllWords()
