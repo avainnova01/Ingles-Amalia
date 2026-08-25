@@ -7,7 +7,6 @@ import {
   setDoc, 
   deleteDoc, 
   query, 
-  orderBy, 
   where 
 } from 'firebase/firestore'
 
@@ -72,18 +71,21 @@ export const uploadImageToImgbb = async (imageInput) => {
 
 export const fetchFirebaseCategories = async () => {
   const colRef = collection(db, 'categories')
-  const q = query(colRef, orderBy('order', 'asc'))
-  const snapshot = await getDocs(q)
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  const snapshot = await getDocs(colRef)
+  const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  results.sort((a, b) => (a.order || 0) - (b.order || 0))
+  return results
 }
 
 export const saveFirebaseCategory = async (category) => {
   const docRef = doc(db, 'categories', category.id)
-  await setDoc(docRef, {
+  const data = {
     ...category,
+    order: category.order || Date.now(),
     updatedAt: new Date().toISOString()
-  }, { merge: true })
-  console.log('Category saved successfully to Firebase Firestore:', category.id)
+  }
+  await setDoc(docRef, data, { merge: true })
+  console.log('Category saved to Firebase Firestore:', category.id)
 }
 
 export const deleteFirebaseCategory = async (id) => {
@@ -106,7 +108,7 @@ export const saveFirebaseWord = async (word) => {
     ...word,
     updatedAt: new Date().toISOString()
   }, { merge: true })
-  console.log('Word saved successfully to Firebase Firestore:', word.id)
+  console.log('Word saved to Firebase Firestore:', word.id)
 }
 
 export const deleteFirebaseWord = async (id) => {

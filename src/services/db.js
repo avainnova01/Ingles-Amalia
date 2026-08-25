@@ -69,7 +69,6 @@ export const getCategories = async () => {
   try {
     const fbCategories = await fetchFirebaseCategories()
     if (fbCategories && fbCategories.length > 0) {
-      // Cache in local IndexedDB
       for (const cat of fbCategories) {
         await runTransaction('categories', 'readwrite', (store) => store.put(cat))
       }
@@ -102,6 +101,7 @@ export const getCategoryById = async (id) => {
 export const saveCategory = async (category) => {
   const data = {
     ...category,
+    order: category.order || Date.now(),
     updatedAt: new Date().toISOString()
   }
   
@@ -163,7 +163,6 @@ export const getAllWords = async () => {
 }
 
 export const saveWord = async (word) => {
-  // If images contain base64 string uploads, upload them to imgbb cloud!
   const processedImages = []
   if (word.images && Array.isArray(word.images)) {
     for (const img of word.images) {
@@ -182,16 +181,13 @@ export const saveWord = async (word) => {
     updatedAt: new Date().toISOString()
   }
 
-  // 1. Save directly to Firebase Firestore Cloud
   try {
     await saveFirebaseWord(data)
   } catch (err) {
     console.error('Error saving word to Firebase Firestore:', err)
   }
 
-  // 2. Save local IndexedDB cache
   await runTransaction('words', 'readwrite', (store) => store.put(data))
-
   return data
 }
 
