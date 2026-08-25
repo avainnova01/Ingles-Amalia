@@ -24,8 +24,15 @@
         </span>
       </div>
 
-      <!-- Main Word Flashcard (Fills available height) -->
-      <div class="flex-1 min-h-0 glass-panel rounded-3xl p-3 sm:p-5 flex flex-col justify-between shadow-2xl border border-slate-700/80 overflow-hidden relative">
+      <!-- Main Word Flashcard (SWIPEABLE with finger touch gesture!) -->
+      <div 
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+        :class="[
+          'flex-1 min-h-0 glass-panel rounded-3xl p-3 sm:p-5 flex flex-col justify-between shadow-2xl border border-slate-700/80 overflow-hidden relative touch-pan-y transition-transform duration-300',
+          slideAnimationClass
+        ]"
+      >
         
         <!-- Word Header + Big Speaker Button -->
         <div class="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-800/80 flex-shrink-0">
@@ -48,17 +55,22 @@
           />
         </div>
 
-        <!-- Full-Size Random Image Container (Dynamically resizes with zero overflow) -->
-        <div class="flex-1 min-h-0 my-2 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group">
+        <!-- Full-Size Random Image Container -->
+        <div class="flex-1 min-h-0 my-2 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group select-none">
           <img 
             v-if="randomImage" 
             :src="randomImage" 
             :alt="currentWord.englishWord" 
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover pointer-events-none"
           />
           <div v-else class="text-center p-4">
             <span class="text-4xl block mb-1">🖼️</span>
             <p class="text-slate-500 text-xs">Sin imagen</p>
+          </div>
+
+          <!-- Subtle swipe hint pill for kids -->
+          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-slate-900/75 backdrop-blur-md text-[10px] text-slate-300 border border-white/10 opacity-70 pointer-events-none flex items-center gap-1">
+            <span>👈 Desliza la tarjeta 👉</span>
           </div>
         </div>
 
@@ -153,7 +165,52 @@ const randomImage = ref(null)
 const speechRate = ref(0.85)
 const loading = ref(true)
 
+// Touch Swipe State
+const touchStartX = ref(0)
+const touchEndX = ref(0)
+const slideAnimationClass = ref('')
+
 const currentWord = computed(() => words.value[currentIndex.value] || {})
+
+const triggerHaptic = () => {
+  if (navigator.vibrate) {
+    navigator.vibrate(10)
+  }
+}
+
+const handleTouchStart = (event) => {
+  touchStartX.value = event.touches[0].clientX
+}
+
+const handleTouchEnd = (event) => {
+  touchEndX.value = event.changedTouches[0].clientX
+  handleSwipe()
+}
+
+const handleSwipe = () => {
+  const distance = touchStartX.value - touchEndX.value
+  const minSwipeDistance = 45 // 45px threshold
+
+  if (distance > minSwipeDistance) {
+    // Swiped LEFT -> Go to NEXT word
+    if (currentIndex.value < words.value.length - 1) {
+      slideAnimationClass.value = '-translate-x-3'
+      setTimeout(() => {
+        slideAnimationClass.value = ''
+      }, 150)
+      nextWord()
+    }
+  } else if (distance < -minSwipeDistance) {
+    // Swiped RIGHT -> Go to PREVIOUS word
+    if (currentIndex.value > 0) {
+      slideAnimationClass.value = 'translate-x-3'
+      setTimeout(() => {
+        slideAnimationClass.value = ''
+      }, 150)
+      prevWord()
+    }
+  }
+}
 
 const setRandomImageForCurrentWord = () => {
   const word = currentWord.value
@@ -194,6 +251,7 @@ const speakCurrentWord = () => {
 const nextWord = () => {
   if (currentIndex.value < words.value.length - 1) {
     currentIndex.value++
+    triggerHaptic()
     setRandomImageForCurrentWord()
     speakCurrentWord()
   }
@@ -202,6 +260,7 @@ const nextWord = () => {
 const prevWord = () => {
   if (currentIndex.value > 0) {
     currentIndex.value--
+    triggerHaptic()
     setRandomImageForCurrentWord()
     speakCurrentWord()
   }
@@ -209,6 +268,7 @@ const prevWord = () => {
 
 const goToWord = (idx) => {
   currentIndex.value = idx
+  triggerHaptic()
   setRandomImageForCurrentWord()
   speakCurrentWord()
 }
