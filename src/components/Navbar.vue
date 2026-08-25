@@ -1,6 +1,11 @@
 <template>
-  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3 pt-safe">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+  <header 
+    :class="[
+      'sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-2.5 pt-safe',
+      $route.path.startsWith('/study') ? 'hidden sm:flex' : 'flex'
+    ]"
+  >
+    <div class="max-w-7xl w-full mx-auto flex items-center justify-between gap-4">
       
       <!-- Brand & Title -->
       <router-link to="/" class="flex items-center gap-3 group">
@@ -17,7 +22,7 @@
         </div>
       </router-link>
 
-      <!-- Desktop Navigation Actions (Hidden on mobile, since mobile uses BottomTabBar) -->
+      <!-- Desktop Navigation Actions -->
       <div class="hidden sm:flex items-center gap-3">
         <!-- Student Mode Link -->
         <router-link 

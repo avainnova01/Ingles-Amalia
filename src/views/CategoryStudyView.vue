@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100vh-125px)] sm:h-[calc(100vh-90px)] flex flex-col justify-between p-3 sm:p-6 max-w-xl mx-auto overflow-hidden">
+  <div class="h-[calc(100dvh-75px)] sm:h-[calc(100vh-90px)] flex flex-col justify-between p-3 sm:p-5 max-w-lg mx-auto overflow-hidden">
     
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center glass-card rounded-3xl p-8">
@@ -11,7 +11,7 @@
     <template v-else-if="category && words.length > 0">
       
       <!-- Top Minimal Header -->
-      <div class="flex items-center justify-between gap-2 px-1 mb-2">
+      <div class="flex items-center justify-between gap-2 px-1 mb-1.5 flex-shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xl sm:text-2xl">{{ category.icon || '🏠' }}</span>
           <h2 class="text-base sm:text-lg font-bold font-fredoka text-white truncate max-w-[200px] sm:max-w-xs">
@@ -25,15 +25,15 @@
       </div>
 
       <!-- Main Word Flashcard (Fills available height) -->
-      <div class="flex-1 min-h-0 glass-panel rounded-3xl p-4 sm:p-6 flex flex-col justify-between shadow-2xl border border-slate-700/80 overflow-hidden relative">
+      <div class="flex-1 min-h-0 glass-panel rounded-3xl p-3 sm:p-5 flex flex-col justify-between shadow-2xl border border-slate-700/80 overflow-hidden relative">
         
         <!-- Word Header + Big Speaker Button -->
-        <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+        <div class="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-800/80 flex-shrink-0">
           <div>
             <h3 class="text-2xl sm:text-4xl font-bold font-fredoka text-white capitalize leading-tight">
               {{ currentWord.englishWord }}
             </h3>
-            <p class="text-xs sm:text-sm text-indigo-300 font-semibold">
+            <p class="text-xs sm:text-sm text-indigo-300 font-semibold mt-0.5">
               {{ currentWord.spanishMeaning }}
             </p>
           </div>
@@ -48,8 +48,8 @@
           />
         </div>
 
-        <!-- Full-Size Random Image Container -->
-        <div class="flex-1 min-h-0 my-3 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group">
+        <!-- Full-Size Random Image Container (Dynamically resizes with zero overflow) -->
+        <div class="flex-1 min-h-0 my-2 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group">
           <img 
             v-if="randomImage" 
             :src="randomImage" 
@@ -63,7 +63,7 @@
         </div>
 
         <!-- Bottom Controls: Speed toggle -->
-        <div class="flex items-center justify-between text-[11px] text-slate-400 bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-800/80">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 bg-slate-950/70 px-3 py-1 rounded-xl border border-slate-800/80 flex-shrink-0">
           <span class="font-medium text-slate-300">Velocidad:</span>
           <div class="flex items-center gap-1.5">
             <button 
@@ -84,24 +84,24 @@
       </div>
 
       <!-- Bottom Mobile Navigation Controls (Previous / Next Word) -->
-      <div class="flex items-center justify-between gap-3 mt-3">
+      <div class="flex items-center justify-between gap-3 mt-2 flex-shrink-0">
         <button 
           @click="prevWord" 
           :disabled="currentIndex === 0"
-          class="flex-1 py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-fredoka font-semibold text-sm flex items-center justify-center gap-1.5 transition border border-slate-700 active:scale-95"
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-fredoka font-semibold text-sm flex items-center justify-center gap-1.5 transition border border-slate-700 active:scale-95"
         >
           <ChevronLeft class="w-5 h-5" />
           <span>Anterior</span>
         </button>
 
         <!-- Dots Indicator -->
-        <div class="flex items-center gap-1.5 px-2">
+        <div class="flex items-center gap-1.5 px-1">
           <span 
             v-for="(w, idx) in words" 
             :key="w.id"
             @click="goToWord(idx)"
             :class="[
-              'w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-300',
+              'w-2 h-2 rounded-full cursor-pointer transition-all duration-300',
               idx === currentIndex ? 'bg-pink-500 scale-125' : 'bg-slate-700'
             ]"
           ></span>
@@ -110,7 +110,7 @@
         <button 
           @click="nextWord" 
           :disabled="currentIndex === words.length - 1"
-          class="flex-1 py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-fredoka font-semibold text-sm flex items-center justify-center gap-1.5 transition border border-slate-700 active:scale-95"
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-fredoka font-semibold text-sm flex items-center justify-center gap-1.5 transition border border-slate-700 active:scale-95"
         >
           <span>Siguiente</span>
           <ChevronRight class="w-5 h-5" />
@@ -161,7 +161,6 @@ const setRandomImageForCurrentWord = () => {
     randomImage.value = null
     return
   }
-  // Pick ONE random image from word's image list
   const idx = Math.floor(Math.random() * word.images.length)
   randomImage.value = word.images[idx]
 }
