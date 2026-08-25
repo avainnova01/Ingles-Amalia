@@ -12,29 +12,17 @@
           Gestión de Vocabulario e Imágenes
         </h2>
         <p class="text-sm text-slate-400">
-          Crea grupos, añade palabras en inglés y sincroniza directamente con tu proyecto Firebase Cloud.
+          Crea grupos, añade palabras en inglés y administra las imágenes principales de estudio.
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Cloud Sync Button -->
-        <button 
-          @click="handleForceSync" 
-          :disabled="isSyncing"
-          class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-fredoka font-semibold text-xs transition flex items-center gap-2 disabled:opacity-50"
-        >
-          <Cloud :class="['w-4 h-4 text-emerald-400', isSyncing ? 'animate-spin' : '']" />
-          <span>{{ isSyncing ? 'Sincronizando...' : '☁️ Forzar Sincronización Firebase' }}</span>
-        </button>
-
-        <button 
-          @click="openCategoryModal()" 
-          class="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-fredoka font-semibold text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
-        >
-          <Plus class="w-5 h-5" />
-          <span>+ Nueva Categoría</span>
-        </button>
-      </div>
+      <button 
+        @click="openCategoryModal()" 
+        class="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-fredoka font-semibold text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
+      >
+        <Plus class="w-5 h-5" />
+        <span>+ Nueva Categoría</span>
+      </button>
     </div>
 
     <!-- Firebase Connection Banner -->
@@ -486,9 +474,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star, Cloud } from 'lucide-vue-next'
+import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star } from 'lucide-vue-next'
 import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord } from '../services/db'
-import { syncAllLocalToFirebase, seedInitialDataIfEmpty } from '../services/seedData'
 import AudioButton from '../components/AudioButton.vue'
 
 const categories = ref([])
@@ -498,7 +485,6 @@ const selectedCategory = ref(null)
 
 const loadingCategories = ref(true)
 const loadingWords = ref(false)
-const isSyncing = ref(false)
 const syncMessage = ref('')
 const syncSuccess = ref(true)
 
@@ -523,25 +509,6 @@ const wordForm = ref({
   images: []
 })
 const newImageUrl = ref('')
-
-const handleForceSync = async () => {
-  isSyncing.value = true
-  syncMessage.value = ''
-  try {
-    // Seed and sync all categories and words directly to Firebase
-    await seedInitialDataIfEmpty()
-    const res = await syncAllLocalToFirebase()
-    syncSuccess.value = true
-    syncMessage.value = `¡Sincronización Exitosa! Se enviaron ${res.categoriesSynced} categorías y ${res.wordsSynced} palabras a Firebase Firestore Cloud.`
-    await loadCategories()
-  } catch (err) {
-    console.error('Firebase sync error:', err)
-    syncSuccess.value = false
-    syncMessage.value = `Error de Firebase: ${err.message || 'Verifica las reglas de seguridad en Firebase Console.'}`
-  } finally {
-    isSyncing.value = false
-  }
-}
 
 const loadCategories = async () => {
   loadingCategories.value = true
@@ -601,11 +568,11 @@ const handleSaveCategory = async () => {
     showCategoryModal.value = false
     await loadCategories()
     syncSuccess.value = true
-    syncMessage.value = `Categoría "${categoryForm.value.name}" guardada y enviada a Firebase Firestore.`
+    syncMessage.value = `Categoría "${categoryForm.value.name}" guardada en la nube de Firebase.`
   } catch (err) {
     console.error('Error saving category:', err)
     syncSuccess.value = false
-    syncMessage.value = `Error guardando en Firebase: ${err.message}`
+    syncMessage.value = `Error al guardar en Firebase: ${err.message}`
   }
 }
 
@@ -691,7 +658,7 @@ const handleSaveWord = async () => {
     await selectCategory(selectedCategory.value)
     await loadCategories()
     syncSuccess.value = true
-    syncMessage.value = `Palabra "${wordForm.value.englishWord}" guardada y sincronizada con Firebase Firestore.`
+    syncMessage.value = `Palabra "${wordForm.value.englishWord}" guardada en la nube de Firebase.`
   } catch (err) {
     console.error('Error saving word:', err)
     syncSuccess.value = false
