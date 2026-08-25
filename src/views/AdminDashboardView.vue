@@ -12,7 +12,7 @@
           Gestión de Vocabulario e Imágenes
         </h2>
         <p class="text-sm text-slate-400">
-          Crea grupos, añade palabras en inglés y sube múltiples imágenes por cada palabra.
+          Crea grupos, añade palabras en inglés y marca la imagen principal para la lección de estudio.
         </p>
       </div>
 
@@ -159,7 +159,7 @@
                     class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition"
                   >
                     <Edit2 class="w-3.5 h-3.5" />
-                    <span>Editar / Agregar Fotos</span>
+                    <span>Editar / Fotos</span>
                   </button>
 
                   <button 
@@ -173,24 +173,47 @@
 
               </div>
 
-              <!-- Multi-Image Thumbnails Gallery -->
+              <!-- Multi-Image Thumbnails Gallery & Main Image Selector -->
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
-                  <span>Imágenes registradas ({{ word.images?.length || 0 }} fotos):</span>
-                  <span v-if="word.images?.length > 1" class="text-amber-400">✨ Múltiples fotos (Ideal para el test)</span>
+                  <span>Imágenes (Toca ⭐ para elegir la imagen principal de estudio):</span>
+                  <span v-if="word.images?.length > 1" class="text-amber-400">📸 {{ word.images.length }} fotos (Variación en tests)</span>
                 </div>
 
                 <div v-if="word.images && word.images.length > 0" class="flex flex-wrap gap-3">
                   <div 
                     v-for="(imgUrl, imgIdx) in word.images" 
                     :key="imgIdx"
-                    class="relative group/img w-20 h-20 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0"
+                    :class="[
+                      'relative group/img w-20 h-20 rounded-xl overflow-hidden bg-slate-950 border-2 transition flex-shrink-0',
+                      imgIdx === 0 ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-slate-800 opacity-80 hover:opacity-100'
+                    ]"
                   >
                     <img :src="imgUrl" :alt="word.englishWord" class="w-full h-full object-cover" />
+
+                    <!-- Main Image ⭐ Badge -->
+                    <span 
+                      v-if="imgIdx === 0" 
+                      class="absolute top-1 left-1 bg-amber-500 text-slate-950 px-1 py-0.5 rounded font-bold text-[9px] flex items-center gap-0.5 shadow-md"
+                    >
+                      <Star class="w-2.5 h-2.5 fill-slate-950" /> Principal
+                    </span>
+
+                    <!-- Make Main Button (if not already main) -->
+                    <button 
+                      v-else
+                      @click="setAsMainImage(word, imgIdx)"
+                      class="absolute top-1 left-1 p-1 rounded-md bg-slate-900/90 text-amber-300 opacity-0 group-hover/img:opacity-100 transition hover:scale-110"
+                      title="Hacer esta la imagen principal de estudio"
+                    >
+                      <Star class="w-3.5 h-3.5 fill-amber-300" />
+                    </button>
+
+                    <!-- Delete Photo Button -->
                     <button 
                       @click="removeImageFromWord(word, imgIdx)"
                       class="absolute top-1 right-1 p-1 rounded-full bg-rose-600/90 text-white opacity-0 group-hover/img:opacity-100 transition hover:scale-110"
-                      title="Eliminar esta foto"
+                      title="Eliminar foto"
                     >
                       <X class="w-3 h-3" />
                     </button>
@@ -198,7 +221,7 @@
                 </div>
 
                 <div v-else class="text-xs text-slate-500 italic">
-                  Sin imágenes asignadas aún. Haz clic en "Editar / Agregar Fotos" para subir imágenes.
+                  Sin imágenes asignadas aún. Haz clic en "Editar / Fotos" para subir imágenes.
                 </div>
               </div>
 
@@ -209,7 +232,7 @@
           <div v-else class="text-center py-12">
             <span class="text-5xl block mb-3">📝</span>
             <h4 class="text-lg font-bold font-fredoka text-white mb-1">No hay palabras en este grupo</h4>
-            <p class="text-xs text-slate-400 mb-4">Agrega palabras como "bedroom", "kitchen", etc., y asígnales varias imágenes.</p>
+            <p class="text-xs text-slate-400 mb-4">Agrega palabras como "bedroom", "kitchen", etc., y asígnales sus imágenes.</p>
             <button 
               @click="openWordModal()" 
               class="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-fredoka text-xs font-semibold"
@@ -342,7 +365,7 @@
           <!-- MULTI-IMAGE UPLOAD AREA -->
           <div class="border-t border-slate-800 pt-4">
             <label class="block text-xs font-semibold text-slate-200 mb-2">
-              📸 Imágenes de esta Palabra (Puedes subir varias fotos):
+              📸 Imágenes (La 1ª foto es la principal de estudio):
             </label>
 
             <!-- Drag and drop / file input -->
@@ -359,7 +382,7 @@
                 Haz clic o arrastra fotos desde tu computador
               </p>
               <p class="text-[10px] text-slate-400 mt-1">
-                Soporta JPG, PNG, WEBP. Puedes seleccionar múltiples fotos simultáneamente.
+                Soporta JPG, PNG, WEBP. Puedes seleccionar múltiples fotos.
               </p>
             </div>
 
@@ -381,23 +404,40 @@
             </div>
 
             <!-- Preview List of Uploaded Images for this Word -->
-            <div v-if="wordForm.images.length > 0" class="space-y-2 max-h-40 overflow-y-auto p-2 bg-slate-950/80 rounded-xl border border-slate-800">
+            <div v-if="wordForm.images.length > 0" class="space-y-2 max-h-48 overflow-y-auto p-2 bg-slate-950/80 rounded-xl border border-slate-800">
               <div 
                 v-for="(img, index) in wordForm.images" 
                 :key="index"
-                class="flex items-center justify-between gap-2 p-2 bg-slate-900 rounded-lg text-xs"
+                :class="[
+                  'flex items-center justify-between gap-2 p-2 rounded-lg text-xs border transition',
+                  index === 0 ? 'bg-amber-950/40 border-amber-500/60' : 'bg-slate-900 border-slate-800'
+                ]"
               >
                 <div class="flex items-center gap-2 overflow-hidden">
                   <img :src="img" class="w-8 h-8 rounded object-cover flex-shrink-0" />
-                  <span class="truncate text-slate-400 text-[11px] max-w-[200px]">Imagen {{ index + 1 }}</span>
+                  <span class="truncate text-slate-300 text-[11px] max-w-[180px]">
+                    {{ index === 0 ? '⭐ Imagen Principal de Estudio' : `Foto ${index + 1}` }}
+                  </span>
                 </div>
-                <button 
-                  type="button" 
-                  @click="removeFormImage(index)" 
-                  class="text-rose-400 hover:text-rose-300 p-1"
-                >
-                  <X class="w-3.5 h-3.5" />
-                </button>
+
+                <div class="flex items-center gap-1">
+                  <button 
+                    v-if="index !== 0"
+                    type="button"
+                    @click="makeFormImageMain(index)"
+                    class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-bold border border-slate-700"
+                  >
+                    ⭐ Principal
+                  </button>
+
+                  <button 
+                    type="button" 
+                    @click="removeFormImage(index)" 
+                    class="text-rose-400 hover:text-rose-300 p-1"
+                  >
+                    <X class="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -428,7 +468,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload } from 'lucide-vue-next'
+import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star } from 'lucide-vue-next'
 import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord } from '../services/db'
 import AudioButton from '../components/AudioButton.vue'
 
@@ -468,7 +508,6 @@ const loadCategories = async () => {
     const list = await getCategories()
     categories.value = list
 
-    // Count words per category
     const counts = {}
     for (const cat of list) {
       const wList = await getWordsByCategory(cat.id)
@@ -576,8 +615,23 @@ const addImageUrl = () => {
   }
 }
 
+const makeFormImageMain = (idx) => {
+  const selected = wordForm.value.images.splice(idx, 1)[0]
+  wordForm.value.images.unshift(selected)
+}
+
 const removeFormImage = (idx) => {
   wordForm.value.images.splice(idx, 1)
+}
+
+const setAsMainImage = async (word, imgIdx) => {
+  const updatedImages = [...word.images]
+  const selected = updatedImages.splice(imgIdx, 1)[0]
+  updatedImages.unshift(selected) // Move selected image to position 0
+
+  const updatedWord = { ...word, images: updatedImages }
+  await saveWord(updatedWord)
+  await selectCategory(selectedCategory.value)
 }
 
 const handleSaveWord = async () => {

@@ -55,11 +55,11 @@
           />
         </div>
 
-        <!-- Full-Size Random Image Container -->
+        <!-- Full-Size MAIN Cover Image Container (Always displays images[0] set in Admin) -->
         <div class="flex-1 min-h-0 my-2 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner relative group select-none">
           <img 
-            v-if="randomImage" 
-            :src="randomImage" 
+            v-if="mainCoverImage" 
+            :src="mainCoverImage" 
             :alt="currentWord.englishWord" 
             class="w-full h-full object-cover pointer-events-none"
           />
@@ -161,7 +161,6 @@ const props = defineProps({
 const category = ref(null)
 const words = ref([])
 const currentIndex = ref(0)
-const randomImage = ref(null)
 const speechRate = ref(0.85)
 const loading = ref(true)
 
@@ -171,6 +170,13 @@ const touchEndX = ref(0)
 const slideAnimationClass = ref('')
 
 const currentWord = computed(() => words.value[currentIndex.value] || {})
+
+// Always display the Main Image (images[0]) configured in Admin!
+const mainCoverImage = computed(() => {
+  const word = currentWord.value
+  if (!word || !word.images || word.images.length === 0) return null
+  return word.images[0] // The main designated cover image
+})
 
 const triggerHaptic = () => {
   if (navigator.vibrate) {
@@ -189,37 +195,21 @@ const handleTouchEnd = (event) => {
 
 const handleSwipe = () => {
   const distance = touchStartX.value - touchEndX.value
-  const minSwipeDistance = 45 // 45px threshold
+  const minSwipeDistance = 45
 
   if (distance > minSwipeDistance) {
-    // Swiped LEFT -> Go to NEXT word
     if (currentIndex.value < words.value.length - 1) {
       slideAnimationClass.value = '-translate-x-3'
-      setTimeout(() => {
-        slideAnimationClass.value = ''
-      }, 150)
+      setTimeout(() => { slideAnimationClass.value = '' }, 150)
       nextWord()
     }
   } else if (distance < -minSwipeDistance) {
-    // Swiped RIGHT -> Go to PREVIOUS word
     if (currentIndex.value > 0) {
       slideAnimationClass.value = 'translate-x-3'
-      setTimeout(() => {
-        slideAnimationClass.value = ''
-      }, 150)
+      setTimeout(() => { slideAnimationClass.value = '' }, 150)
       prevWord()
     }
   }
-}
-
-const setRandomImageForCurrentWord = () => {
-  const word = currentWord.value
-  if (!word || !word.images || word.images.length === 0) {
-    randomImage.value = null
-    return
-  }
-  const idx = Math.floor(Math.random() * word.images.length)
-  randomImage.value = word.images[idx]
 }
 
 const loadCategoryData = async () => {
@@ -230,7 +220,6 @@ const loadCategoryData = async () => {
     currentIndex.value = 0
 
     if (words.value.length > 0) {
-      setRandomImageForCurrentWord()
       speakCurrentWord()
     }
   } catch (error) {
@@ -252,7 +241,6 @@ const nextWord = () => {
   if (currentIndex.value < words.value.length - 1) {
     currentIndex.value++
     triggerHaptic()
-    setRandomImageForCurrentWord()
     speakCurrentWord()
   }
 }
@@ -261,7 +249,6 @@ const prevWord = () => {
   if (currentIndex.value > 0) {
     currentIndex.value--
     triggerHaptic()
-    setRandomImageForCurrentWord()
     speakCurrentWord()
   }
 }
@@ -269,7 +256,6 @@ const prevWord = () => {
 const goToWord = (idx) => {
   currentIndex.value = idx
   triggerHaptic()
-  setRandomImageForCurrentWord()
   speakCurrentWord()
 }
 
