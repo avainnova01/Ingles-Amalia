@@ -1,4 +1,4 @@
-// Database service using IndexedDB (Local) + Firebase Firestore & ImgBB Cloud Sync.
+// Database service combining Firebase Firestore (Primary Cloud) + IndexedDB (Local Cache).
 
 import { 
   fetchFirebaseCategories, 
@@ -23,19 +23,16 @@ const initDB = () => {
     request.onupgradeneeded = (event) => {
       const db = event.target.result
 
-      // Store: Categories
       if (!db.objectStoreNames.contains('categories')) {
         const catStore = db.createObjectStore('categories', { keyPath: 'id' })
         catStore.createIndex('order', 'order', { unique: false })
       }
 
-      // Store: Words (linked to categoryId)
       if (!db.objectStoreNames.contains('words')) {
         const wordStore = db.createObjectStore('words', { keyPath: 'id' })
         wordStore.createIndex('categoryId', 'categoryId', { unique: false })
       }
 
-      // Store: Quiz History
       if (!db.objectStoreNames.contains('quizzes')) {
         const quizStore = db.createObjectStore('quizzes', { keyPath: 'id', autoIncrement: true })
         quizStore.createIndex('date', 'date', { unique: false })
@@ -54,7 +51,6 @@ const initDB = () => {
   })
 }
 
-// Generic helper for transaction execution
 const runTransaction = async (storeName, mode, callback) => {
   const db = await initDB()
   return new Promise((resolve, reject) => {
@@ -67,21 +63,20 @@ const runTransaction = async (storeName, mode, callback) => {
   })
 }
 
-// --- CATEGORIES API (LOCAL + FIREBASE SYNC) ---
+// --- CATEGORIES API (FIREBASE PRIMARY + LOCAL FALLBACK) ---
 
 export const getCategories = async () => {
   try {
-    // Attempt Firebase sync first
     const fbCategories = await fetchFirebaseCategories()
     if (fbCategories && fbCategories.length > 0) {
-      // Update local storage cache
+      // Cache in local IndexedDB
       for (const cat of fbCategories) {
         await runTransaction('categories', 'readwrite', (store) => store.put(cat))
       }
       return fbCategories
     }
   } catch (e) {
-    console.warn('Firebase offline, loading from local cache:', e)
+    console.warn('Unable to load from Firebase Firestore, falling back to local storage:', e)
   }
 
   // Local fallback
@@ -100,8 +95,6 @@ export const getCategories = async () => {
 }
 
 export const getCategoryById = async (id) => {
-  const localCat = await runTransaction('categories', 'readonly', (store) => store.get(id))
-  if (localCat) return localCat
   const categories = await getCategories()
   return categories.find(c => c.id === id) || null
 }
@@ -112,30 +105,34 @@ export const saveCategory = async (category) => {
     updatedAt: new Date().toISOString()
   }
   
-  // 1. Save local
+  // 1. Save directly to Firebase Firestore
+  try {
+    await saveFirebaseCategory(data)
+  } catch (err) {
+    console.error('Error saving category to Firebase:', err)
+  }
+
+  // 2. Save local cache
   await runTransaction('categories', 'readwrite', (store) => store.put(data))
-
-  // 2. Sync to Firebase
-  saveFirebaseCategory(data).catch(err => console.error('Firebase sync error:', err))
-
   return data
 }
 
 export const deleteCategory = async (id) => {
-  // Delete words
   const words = await getWordsByCategory(id)
   for (const w of words) {
     await deleteWord(w.id)
   }
 
-  // 1. Delete local
-  await runTransaction('categories', 'readwrite', (store) => store.delete(id))
+  try {
+    await deleteFirebaseCategory(id)
+  } catch (err) {
+    console.error('Error deleting category from Firebase:', err)
+  }
 
-  // 2. Delete Firebase
-  deleteFirebaseCategory(id).catch(err => console.error('Firebase delete error:', err))
+  await runTransaction('categories', 'readwrite', (store) => store.delete(id))
 }
 
-// --- WORDS API (LOCAL + FIREBASE + IMGBB CLOUD UPLOAD) ---
+// --- WORDS API (FIREBASE PRIMARY + IMGBB UPLOAD + LOCAL FALLBACK) ---
 
 export const getWordsByCategory = async (categoryId) => {
   try {
@@ -147,7 +144,7 @@ export const getWordsByCategory = async (categoryId) => {
       return fbWords
     }
   } catch (e) {
-    console.warn('Firebase offline, using local words:', e)
+    console.warn('Unable to load words from Firebase Firestore, using local fallback:', e)
   }
 
   const db = await initDB()
@@ -185,18 +182,26 @@ export const saveWord = async (word) => {
     updatedAt: new Date().toISOString()
   }
 
-  // 1. Save local IndexedDB
-  await runTransaction('words', 'readwrite', (store) => store.put(data))
+  // 1. Save directly to Firebase Firestore Cloud
+  try {
+    await saveFirebaseWord(data)
+  } catch (err) {
+    console.error('Error saving word to Firebase Firestore:', err)
+  }
 
-  // 2. Sync to Firebase Firestore
-  saveFirebaseWord(data).catch(err => console.error('Firebase save word error:', err))
+  // 2. Save local IndexedDB cache
+  await runTransaction('words', 'readwrite', (store) => store.put(data))
 
   return data
 }
 
 export const deleteWord = async (id) => {
+  try {
+    await deleteFirebaseWord(id)
+  } catch (err) {
+    console.error('Error deleting word from Firebase:', err)
+  }
   await runTransaction('words', 'readwrite', (store) => store.delete(id))
-  deleteFirebaseWord(id).catch(err => console.error('Firebase delete word error:', err))
 }
 
 // --- QUIZ RESULTS HISTORY ---

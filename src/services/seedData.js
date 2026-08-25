@@ -3,10 +3,10 @@ import { getCategories, saveCategory, saveWord } from './db'
 export const seedInitialDataIfEmpty = async () => {
   const existing = await getCategories()
   if (existing && existing.length > 0) {
-    return // Already seeded or has user data
+    return
   }
 
-  console.log('Seeding initial categories and words for Amalia...')
+  console.log('Seeding initial categories and words to Firebase Firestore and local storage...')
 
   // Category 1: Partes de la casa
   const catHouse = {
@@ -42,14 +42,13 @@ export const seedInitialDataIfEmpty = async () => {
   await saveCategory(catAnimals)
   await saveCategory(catFruits)
 
-  // --- WORDS FOR "PARTES DE LA CASA" (with MULTIPLE images per word as requested) ---
+  // WORDS FOR "PARTES DE LA CASA"
   const houseWords = [
     {
       id: 'w_bedroom',
       categoryId: catHouse.id,
       englishWord: 'bedroom',
       spanishMeaning: 'Habitación / Dormitorio',
-      // Multiple images so Amalia learns the concept!
       images: [
         'https://images.unsplash.com/photo-1540518614846-7ede433c517a?auto=format&fit=crop&w=600&q=80',
         'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=600&q=80',
@@ -98,7 +97,7 @@ export const seedInitialDataIfEmpty = async () => {
     }
   ]
 
-  // --- WORDS FOR "ANIMALES" ---
+  // WORDS FOR "ANIMALES"
   const animalWords = [
     {
       id: 'w_dog',
@@ -140,7 +139,7 @@ export const seedInitialDataIfEmpty = async () => {
     }
   ]
 
-  // --- WORDS FOR "FRUTAS Y COMIDA" ---
+  // WORDS FOR "FRUTAS Y COMIDA"
   const fruitWords = [
     {
       id: 'w_apple',
@@ -176,5 +175,5 @@ export const seedInitialDataIfEmpty = async () => {
     await saveWord(w)
   }
 
-  console.log('Seeding completed successfully!')
+  console.log('Seeding completed successfully to Firebase!')
 }
