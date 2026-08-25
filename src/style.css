@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
     font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    overscroll-behavior-y: none;
   }
 
   h1, h2, h3, .font-fredoka {
@@ -10,7 +14,18 @@
   }
 }
 
-/* Custom playful animations and sound wave effects */
+/* Mobile Safe Area Insets for iOS & Android notched screens */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Native App Mobile Feel Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-8px) rotate(1deg); }
@@ -27,6 +42,12 @@
   50% { transform: translateY(-6px); }
 }
 
+@keyframes spring-pop {
+  0% { transform: scale(0.92); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
@@ -35,21 +56,34 @@
   animation: bounce-subtle 2s ease-in-out infinite;
 }
 
+.animate-spring {
+  animation: spring-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 .pulse-effect {
   animation: pulse-ring 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
-/* Glassmorphism utilities */
+/* Glassmorphism utilities with mobile blur support */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(30, 41, 59, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Mobile Bottom Navigation Glass Container */
+.mobile-tab-bar {
+  background: rgba(11, 15, 25, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
 }
