@@ -10,6 +10,7 @@ import {
   deleteFirebaseWord,
   uploadImageToImgbb
 } from './firebase'
+import { compressImage } from './imageUtils'
 
 const DB_NAME = 'InglesAmaliaDB'
 const DB_VERSION = 1
@@ -196,17 +197,31 @@ export const getAllWords = async () => {
   return runTransaction('words', 'readonly', (store) => store.getAll())
 }
 
-export const saveWord = async (word) => {
+export const saveWord = async (word, onProgress) => {
   const processedImages = []
   if (word.images && Array.isArray(word.images)) {
+    const rawImagesToUpload = word.images.filter(img => typeof img === 'string' && img.startsWith('data:image'))
+    const totalToUpload = rawImagesToUpload.length
+    let uploadIndex = 0
+
     for (const img of word.images) {
       if (typeof img === 'string' && img.startsWith('data:image')) {
-        const cloudUrl = await uploadImageToImgbb(img)
+        uploadIndex++
+        if (onProgress) {
+          onProgress(`Subiendo imagen ${uploadIndex} de ${totalToUpload} a la nube... ☁️`)
+        }
+        // Ensure image is compressed before upload for maximum speed
+        const optimizedImg = await compressImage(img)
+        const cloudUrl = await uploadImageToImgbb(optimizedImg)
         processedImages.push(cloudUrl)
       } else {
         processedImages.push(img)
       }
     }
+  }
+
+  if (onProgress) {
+    onProgress('Guardando en Firebase... 💾')
   }
 
   const data = {

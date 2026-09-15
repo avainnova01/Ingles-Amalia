@@ -310,16 +310,19 @@
           <div class="flex items-center justify-end gap-3 pt-3">
             <button 
               type="button" 
+              :disabled="isSavingCategory"
               @click="showCategoryModal = false" 
-              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer"
+              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
-              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer"
+              :disabled="isSavingCategory"
+              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Guardar Categoría
+              <Loader2 v-if="isSavingCategory" class="w-4 h-4 animate-spin" />
+              <span>{{ isSavingCategory ? 'Guardando...' : 'Guardar Categoría' }}</span>
             </button>
           </div>
         </form>
@@ -329,7 +332,11 @@
     <!-- MODAL 2: CREATE / EDIT WORD & MULTI-IMAGE UPLOAD -->
     <div v-if="showWordModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
       <div class="bg-white max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xl relative my-8">
-        <button @click="showWordModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 cursor-pointer">
+        <button 
+          :disabled="isSavingWord"
+          @click="showWordModal = false" 
+          class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+        >
           <X class="w-5 h-5" />
         </button>
 
@@ -345,10 +352,11 @@
             <div class="flex items-center gap-2">
               <input 
                 v-model="wordForm.englishWord" 
+                :disabled="isSavingWord"
                 required 
                 type="text"
                 placeholder="Ej: bedroom"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500 disabled:opacity-60"
               />
               <AudioButton 
                 v-if="wordForm.englishWord"
@@ -364,10 +372,11 @@
             <label class="block text-xs font-semibold text-slate-700 mb-1">Traducción en Español (ej: Dormitorio / Habitación)</label>
             <input 
               v-model="wordForm.spanishMeaning" 
+              :disabled="isSavingWord"
               required 
               type="text"
               placeholder="Ej: Habitacion / Dormitorio"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500 disabled:opacity-60"
             />
           </div>
 
@@ -377,34 +386,42 @@
               📸 Imágenes (La 1ª foto es la principal de estudio):
             </label>
 
-            <div class="border-2 border-dashed border-slate-300 hover:border-sky-400 rounded-2xl p-4 text-center bg-slate-50/70 transition cursor-pointer relative mb-3">
+            <div 
+              :class="[
+                'border-2 border-dashed border-slate-300 hover:border-sky-400 rounded-2xl p-4 text-center bg-slate-50/70 transition relative mb-3',
+                isSavingWord ? 'opacity-50 pointer-events-none' : 'cursor-pointer'
+              ]"
+            >
               <input 
                 type="file" 
                 multiple 
                 accept="image/*" 
+                :disabled="isSavingWord"
                 @change="handleFileUpload" 
                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
               />
               <Upload class="w-7 h-7 mx-auto text-sky-500 mb-1.5" />
               <p class="text-xs font-semibold text-slate-700">
-                Haz clic o arrastra fotos desde tu computador
+                Haz clic o arrastra fotos desde tu computador o celular
               </p>
               <p class="text-[10px] text-slate-400 mt-0.5">
-                Soporta JPG, PNG, WEBP. Puedes seleccionar múltiples fotos.
+                ⚡ Se optimizan y comprimen automáticamente para una subida ultra rápida.
               </p>
             </div>
 
             <div class="flex items-center gap-2 mb-3">
               <input 
                 v-model="newImageUrl" 
+                :disabled="isSavingWord"
                 type="text"
                 placeholder="O pega el enlace URL de una imagen..."
-                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:border-sky-500"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:border-sky-500 disabled:opacity-60"
               />
               <button 
                 type="button"
+                :disabled="isSavingWord"
                 @click="addImageUrl" 
-                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 cursor-pointer flex-shrink-0"
+                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 cursor-pointer flex-shrink-0 disabled:opacity-50"
               >
                 + Añadir URL
               </button>
@@ -430,16 +447,18 @@
                   <button 
                     v-if="index !== 0"
                     type="button"
+                    :disabled="isSavingWord"
                     @click="makeFormImageMain(index)"
-                    class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-amber-600 text-[10px] font-bold border border-slate-200 cursor-pointer"
+                    class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-amber-600 text-[10px] font-bold border border-slate-200 cursor-pointer disabled:opacity-50"
                   >
                     ⭐ Principal
                   </button>
 
                   <button 
                     type="button" 
+                    :disabled="isSavingWord"
                     @click="removeFormImage(index)" 
-                    class="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                    class="text-rose-500 hover:text-rose-700 p-1 cursor-pointer disabled:opacity-50"
                   >
                     <X class="w-3.5 h-3.5" />
                   </button>
@@ -449,19 +468,28 @@
 
           </div>
 
+          <!-- Active Saving Progress Banner -->
+          <div v-if="isSavingWord" class="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 flex items-center gap-3 text-sky-800 text-xs font-semibold animate-pulse">
+            <Loader2 class="w-5 h-5 animate-spin text-sky-600 flex-shrink-0" />
+            <span>{{ savingWordProgress || 'Subiendo fotos y guardando en la nube...' }}</span>
+          </div>
+
           <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
             <button 
               type="button" 
+              :disabled="isSavingWord"
               @click="showWordModal = false" 
-              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer"
+              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
-              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer"
+              :disabled="isSavingWord"
+              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Guardar Palabra
+              <Loader2 v-if="isSavingWord" class="w-4 h-4 animate-spin" />
+              <span>{{ isSavingWord ? 'Guardando...' : 'Guardar Palabra' }}</span>
             </button>
           </div>
 
@@ -474,8 +502,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star } from 'lucide-vue-next'
+import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star, Loader2 } from 'lucide-vue-next'
 import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord, subscribeCategories } from '../services/db'
+import { compressImage } from '../services/imageUtils'
 import AudioButton from '../components/AudioButton.vue'
 
 const categories = ref([])
@@ -487,6 +516,11 @@ const loadingCategories = ref(true)
 const loadingWords = ref(false)
 const syncMessage = ref('')
 const syncSuccess = ref(true)
+
+// Loading states for saves and uploads
+const isSavingWord = ref(false)
+const savingWordProgress = ref('')
+const isSavingCategory = ref(false)
 
 // Modals state
 const showCategoryModal = ref(false)
@@ -563,6 +597,7 @@ const openCategoryModal = (cat = null) => {
 }
 
 const handleSaveCategory = async () => {
+  isSavingCategory.value = true
   try {
     await saveCategory(categoryForm.value)
     showCategoryModal.value = false
@@ -573,6 +608,8 @@ const handleSaveCategory = async () => {
     console.error('Error saving category:', err)
     syncSuccess.value = false
     syncMessage.value = `Error al guardar en Firebase: ${err.message}`
+  } finally {
+    isSavingCategory.value = false
   }
 }
 
@@ -611,17 +648,16 @@ const openWordModal = (word = null) => {
   showWordModal.value = true
 }
 
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const files = event.target.files
   if (!files || files.length === 0) return
 
-  Array.from(files).forEach(file => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      wordForm.value.images.push(e.target.result)
-    }
-    reader.readAsDataURL(file)
-  })
+  for (const file of Array.from(files)) {
+    // Automatically compress image to ~1000px and light size before adding
+    const compressed = await compressImage(file)
+    wordForm.value.images.push(compressed)
+  }
+  event.target.value = ''
 }
 
 const addImageUrl = () => {
@@ -651,18 +687,25 @@ const setAsMainImage = async (word, imgIdx) => {
 }
 
 const handleSaveWord = async () => {
+  isSavingWord.value = true
+  savingWordProgress.value = 'Iniciando subida... 🚀'
   try {
     wordForm.value.categoryId = selectedCategory.value.id
-    await saveWord(wordForm.value)
+    await saveWord(wordForm.value, (msg) => {
+      savingWordProgress.value = msg
+    })
     showWordModal.value = false
     await selectCategory(selectedCategory.value)
     await loadCategories()
     syncSuccess.value = true
-    syncMessage.value = `Palabra "${wordForm.value.englishWord}" guardada en la nube de Firebase.`
+    syncMessage.value = `Palabra "${wordForm.value.englishWord}" guardada con éxito en Firebase.`
   } catch (err) {
     console.error('Error saving word:', err)
     syncSuccess.value = false
     syncMessage.value = `Error al guardar en Firebase: ${err.message}`
+  } finally {
+    isSavingWord.value = false
+    savingWordProgress.value = ''
   }
 }
 
