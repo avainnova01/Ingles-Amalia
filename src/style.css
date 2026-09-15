@@ -3,13 +3,15 @@
 @layer base {
   html, body {
     font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #F8FAFC;
+    color: #1E293B;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
     overscroll-behavior-y: none;
   }
 
-  h1, h2, h3, .font-fredoka {
+  h1, h2, h3, h4, .font-fredoka {
     font-family: 'Fredoka', cursive, sans-serif;
   }
 }
@@ -25,26 +27,26 @@
   margin-bottom: env(safe-area-inset-bottom, 16px);
 }
 
-/* Native App Mobile Feel Animations */
+/* Native App Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(1deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
 }
 
 @keyframes pulse-ring {
   0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 0.3; }
+  50% { transform: scale(1.15); opacity: 0.2; }
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
 @keyframes bounce-subtle {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes spring-pop {
-  0% { transform: scale(0.92); }
-  50% { transform: scale(1.05); }
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.04); }
   100% { transform: scale(1); }
 }
 
@@ -64,26 +66,46 @@
   animation: pulse-ring 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
-/* Glassmorphism utilities with mobile blur support */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.82);
+/* Organic Pastel Blobs for Study Illustrations */
+.blob-organic {
+  border-radius: 46% 54% 63% 37% / 40% 48% 52% 60%;
+  transition: all 0.5s ease-in-out;
+}
+
+/* Clean Light UI Surface Utilities */
+.clean-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.02);
+}
+
+.clean-dock {
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 14px 40px -8px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* Backward compatibility aliases */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.04);
 }
 
-/* Mobile Bottom Navigation Glass Container */
 .mobile-tab-bar {
-  background: rgba(11, 15, 25, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid #E2E8F0;
+  box-shadow: 0 -8px 25px -4px rgba(0, 0, 0, 0.05);
 }

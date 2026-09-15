@@ -2,15 +2,15 @@
   <button 
     @click.stop="handleClick" 
     :class="[
-      'inline-flex items-center justify-center gap-2 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 shadow-lg cursor-pointer',
+      'inline-flex items-center justify-center gap-2 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 shadow-sm cursor-pointer',
       sizeClasses,
       variantClasses,
-      isSpeaking ? 'ring-4 ring-pink-400 ring-offset-2 ring-offset-slate-900 scale-105' : ''
+      isSpeaking ? 'ring-4 ring-sky-400 ring-offset-2 ring-offset-white scale-105' : ''
     ]"
     :title="`Escuchar pronunciación de '${text}'`"
     type="button"
   >
-    <Volume2 :class="[iconSizeClasses, isSpeaking ? 'animate-bounce text-pink-300' : '']" />
+    <Volume2 :class="[iconSizeClasses, isSpeaking ? 'animate-bounce text-amber-300' : '']" />
     <span v-if="showLabel" class="font-fredoka tracking-wide">
       {{ isSpeaking ? 'Escuchando...' : (label || 'Pronunciar') }}
     </span>
@@ -76,9 +76,9 @@ const iconSizeClasses = {
 }[props.size] || 'w-5 h-5'
 
 const variantClasses = {
-  primary: 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-indigo-500/25',
-  secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 shadow-slate-900/50',
-  gradient: 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-95 text-white shadow-pink-500/30',
-  'icon-only': 'p-3 bg-purple-600/80 hover:bg-purple-500 text-white rounded-full shadow-purple-900/50'
-}[props.variant] || 'bg-violet-600 text-white'
+  primary: 'bg-sky-500 hover:bg-sky-600 text-white shadow-sky-500/25',
+  secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm',
+  gradient: 'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 hover:opacity-95 text-white shadow-sky-500/25',
+  'icon-only': 'p-2.5 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 rounded-full shadow-sm'
+}[props.variant] || 'bg-sky-500 text-white'
 </script>

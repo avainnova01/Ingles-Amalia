@@ -1,18 +1,22 @@
 <template>
-  <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-50 mobile-tab-bar pb-safe px-3 py-2 flex items-center justify-around">
-    
+  <!-- Floating Bottom Capsule Dock (Hidden in Study view since Study has its own dedicated dock) -->
+  <div 
+    v-if="!$route.path.startsWith('/study')"
+    class="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 clean-dock rounded-full px-4 py-2 flex items-center gap-4 sm:gap-6 shadow-xl"
+  >
     <!-- Tab 1: Inicio / Categorías -->
     <router-link 
       to="/" 
       @click="vibrate"
       :class="[
-        'flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-300 relative',
-        $route.path === '/' ? 'text-pink-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        $route.path === '/' 
+          ? 'bg-sky-500 text-white shadow-sm font-bold scale-105' 
+          : 'text-slate-500 hover:text-slate-800'
       ]"
     >
-      <Home class="w-6 h-6 mb-1 transition-transform group-active:scale-95" />
-      <span class="text-[11px] font-fredoka">Inicio</span>
-      <span v-if="$route.path === '/'" class="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-pink-400 shadow-lg shadow-pink-500/80"></span>
+      <LayoutGrid class="w-5 h-5" />
+      <span v-if="$route.path === '/'" class="text-xs font-fredoka">Inicio</span>
     </router-link>
 
     <!-- Tab 2: Estudiar -->
@@ -20,55 +24,51 @@
       :to="studyPath" 
       @click="vibrate"
       :class="[
-        'flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-300 relative',
-        $route.path.startsWith('/study') ? 'text-purple-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        $route.path.startsWith('/study') 
+          ? 'bg-purple-600 text-white shadow-sm font-bold scale-105' 
+          : 'text-slate-500 hover:text-slate-800'
       ]"
     >
-      <BookOpen class="w-6 h-6 mb-1" />
-      <span class="text-[11px] font-fredoka">Estudiar</span>
-      <span v-if="$route.path.startsWith('/study')" class="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-lg shadow-purple-500/80"></span>
+      <GraduationCap class="w-5 h-5" />
+      <span v-if="$route.path.startsWith('/study')" class="text-xs font-fredoka">Estudiar</span>
     </router-link>
 
-    <!-- Tab 3: Test / Juego -->
+    <!-- Tab 3: Test / Quiz -->
     <router-link 
       :to="quizPath" 
       @click="vibrate"
       :class="[
-        'flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-300 relative',
-        $route.path.startsWith('/quiz') ? 'text-amber-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        $route.path.startsWith('/quiz') 
+          ? 'bg-amber-500 text-white shadow-sm font-bold scale-105' 
+          : 'text-slate-500 hover:text-slate-800'
       ]"
     >
-      <div class="relative">
-        <Gamepad2 class="w-6 h-6 mb-1" />
-        <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-        </span>
-      </div>
-      <span class="text-[11px] font-fredoka">Hacer Test</span>
-      <span v-if="$route.path.startsWith('/quiz')" class="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-lg shadow-amber-500/80"></span>
+      <Gamepad2 class="w-5 h-5" />
+      <span v-if="$route.path.startsWith('/quiz')" class="text-xs font-fredoka">Test</span>
     </router-link>
 
-    <!-- Tab 4: Administración (Padres) -->
+    <!-- Tab 4: Admin -->
     <router-link 
       to="/admin" 
       @click="vibrate"
       :class="[
-        'flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-300 relative',
-        $route.path.startsWith('/admin') ? 'text-indigo-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
+        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        $route.path.startsWith('/admin') 
+          ? 'bg-slate-800 text-white shadow-sm font-bold scale-105' 
+          : 'text-slate-500 hover:text-slate-800'
       ]"
     >
-      <Settings class="w-6 h-6 mb-1" />
-      <span class="text-[11px] font-fredoka">Admin</span>
-      <span v-if="$route.path.startsWith('/admin')" class="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-lg shadow-indigo-500/80"></span>
+      <Settings class="w-5 h-5" />
+      <span v-if="$route.path.startsWith('/admin')" class="text-xs font-fredoka">Admin</span>
     </router-link>
-
-  </nav>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Home, BookOpen, Gamepad2, Settings } from 'lucide-vue-next'
+import { LayoutGrid, GraduationCap, Gamepad2, Settings } from 'lucide-vue-next'
 import { getCategories } from '../services/db'
 
 const studyPath = ref('/study/cat_house_parts')
@@ -76,7 +76,7 @@ const quizPath = ref('/quiz/cat_house_parts')
 
 const vibrate = () => {
   if (navigator.vibrate) {
-    navigator.vibrate(10) // Light native haptic touch feedback
+    navigator.vibrate(10)
   }
 }
 

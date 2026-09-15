@@ -1,102 +1,102 @@
 <template>
-  <div class="min-h-[calc(100vh-80px)] py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+  <div class="min-h-[calc(100vh-80px)] py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     
     <!-- Admin Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 glass-panel p-6 rounded-3xl border border-slate-700/80">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
       <div>
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-100 text-sky-700 text-xs font-semibold mb-2">
           <Settings class="w-3.5 h-3.5" />
           <span>Módulo Administrativo</span>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-bold font-fredoka text-white">
+        <h2 class="text-2xl sm:text-3xl font-bold font-fredoka text-slate-800">
           Gestión de Vocabulario e Imágenes
         </h2>
-        <p class="text-sm text-slate-400">
+        <p class="text-xs sm:text-sm text-slate-500">
           Crea grupos, añade palabras en inglés y administra las imágenes principales de estudio.
         </p>
       </div>
 
       <button 
         @click="openCategoryModal()" 
-        class="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-fredoka font-semibold text-sm shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
+        class="px-5 py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-fredoka font-semibold text-sm shadow-md shadow-sky-500/20 transition flex items-center gap-2 cursor-pointer"
       >
-        <Plus class="w-5 h-5" />
+        <Plus class="w-4 h-4" />
         <span>+ Nueva Categoría</span>
       </button>
     </div>
 
     <!-- Firebase Connection Banner -->
-    <div v-if="syncMessage" :class="['mb-6 p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between', syncSuccess ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-200' : 'bg-rose-950/60 border-rose-500/50 text-rose-200']">
+    <div v-if="syncMessage" :class="['mb-6 p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between', syncSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800']">
       <div class="flex items-center gap-2">
         <span>{{ syncSuccess ? '🟢' : '⚠️' }}</span>
         <span>{{ syncMessage }}</span>
       </div>
-      <button @click="syncMessage = ''" class="text-slate-400 hover:text-white">✕</button>
+      <button @click="syncMessage = ''" class="text-slate-400 hover:text-slate-700">✕</button>
     </div>
 
     <!-- Main Layout: Left = Categories List, Right = Words & Multi-Image Uploads for Selected Category -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       
       <!-- Left Column: Category Selector Sidebar (4 Cols) -->
-      <div class="lg:col-span-4 space-y-4">
-        <h3 class="text-lg font-bold font-fredoka text-slate-200 flex items-center gap-2 px-1">
-          <FolderLayout class="w-5 h-5 text-pink-400" />
+      <div class="lg:col-span-4 space-y-3">
+        <h3 class="text-base font-bold font-fredoka text-slate-800 flex items-center gap-2 px-1">
+          <FolderLayout class="w-4 h-4 text-sky-500" />
           <span>Grupos / Categorías</span>
         </h3>
 
         <!-- Loading -->
-        <div v-if="loadingCategories" class="space-y-3">
-          <div v-for="i in 3" :key="i" class="h-20 bg-slate-800/50 animate-pulse rounded-2xl border border-slate-800"></div>
+        <div v-if="loadingCategories" class="space-y-2">
+          <div v-for="i in 3" :key="i" class="h-16 bg-slate-200/60 animate-pulse rounded-2xl border border-slate-200"></div>
         </div>
 
         <!-- Category Cards List -->
-        <div v-else-if="categories.length > 0" class="space-y-3">
+        <div v-else-if="categories.length > 0" class="space-y-2.5">
           <div 
             v-for="cat in categories" 
             :key="cat.id"
             @click="selectCategory(cat)"
             :class="[
-              'p-4 rounded-2xl transition-all cursor-pointer border flex items-center justify-between group',
+              'p-3.5 rounded-2xl transition-all cursor-pointer border flex items-center justify-between group shadow-xs',
               selectedCategory?.id === cat.id 
-                ? 'bg-slate-800 border-pink-500/80 shadow-lg shadow-pink-500/10 ring-1 ring-pink-500/40' 
-                : 'bg-slate-900/70 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700'
+                ? 'bg-sky-50/80 border-sky-500 ring-2 ring-sky-400/20 shadow-sm' 
+                : 'bg-white border-slate-200 hover:border-sky-300 hover:bg-slate-50/80'
             ]"
           >
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl">
+              <div class="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xl flex-shrink-0">
                 {{ cat.icon || '📁' }}
               </div>
               <div>
-                <h4 class="font-bold font-fredoka text-white group-hover:text-pink-300 transition-colors">
+                <h4 class="font-bold font-fredoka text-slate-800 group-hover:text-sky-600 transition-colors text-sm">
                   {{ cat.name }}
                 </h4>
-                <p class="text-xs text-indigo-300">
+                <p class="text-xs text-slate-500">
                   {{ cat.englishName }} • {{ wordCounts[cat.id] || 0 }} palabras
                 </p>
               </div>
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+            <div class="flex items-center gap-1 opacity-75 group-hover:opacity-100">
               <button 
                 @click.stop="openCategoryModal(cat)"
-                class="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition"
+                class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition"
                 title="Editar Categoría"
               >
-                <Edit2 class="w-4 h-4" />
+                <Edit2 class="w-3.5 h-3.5" />
               </button>
               <button 
                 @click.stop="confirmDeleteCategory(cat)"
-                class="p-2 hover:bg-rose-500/20 rounded-lg text-slate-400 hover:text-rose-400 transition"
+                class="p-1.5 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-600 transition"
                 title="Eliminar Categoría"
               >
-                <Trash2 class="w-4 h-4" />
+                <Trash2 class="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
 
-        <div v-else class="glass-card p-6 rounded-2xl text-center text-slate-400 text-sm">
+        <div v-else class="bg-white p-6 rounded-2xl border border-slate-200 text-center text-slate-500 text-sm">
           No hay categorías creadas. Haz clic arriba en "+ Nueva Categoría".
         </div>
 
@@ -105,17 +105,17 @@
       <!-- Right Column: Words & Multi-Image Manager (8 Cols) -->
       <div class="lg:col-span-8">
         
-        <div v-if="selectedCategory" class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-700/80">
+        <div v-if="selectedCategory" class="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm">
           
           <!-- Category Header info -->
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-800">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-slate-100">
             <div class="flex items-center gap-3">
-              <span class="text-4xl">{{ selectedCategory.icon || '📂' }}</span>
+              <span class="text-3xl">{{ selectedCategory.icon || '📂' }}</span>
               <div>
-                <h3 class="text-2xl font-bold font-fredoka text-white">
+                <h3 class="text-xl sm:text-2xl font-bold font-fredoka text-slate-800">
                   {{ selectedCategory.name }}
                 </h3>
-                <p class="text-xs text-indigo-300">
+                <p class="text-xs text-slate-500">
                   {{ selectedCategory.englishName }} • Listado de palabras asociadas
                 </p>
               </div>
@@ -123,25 +123,25 @@
 
             <button 
               @click="openWordModal()" 
-              class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-fredoka text-xs font-semibold shadow-md shadow-pink-600/20 transition flex items-center gap-2"
+              class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-fredoka text-xs font-semibold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus class="w-4 h-4" />
-              <span>+ Agregar Palabra a {{ selectedCategory.name }}</span>
+              <Plus class="w-3.5 h-3.5" />
+              <span>+ Agregar Palabra</span>
             </button>
           </div>
 
           <!-- Words List for selected Category -->
-          <div v-if="loadingWords" class="space-y-4">
-            <div v-for="i in 3" :key="i" class="h-28 bg-slate-800/40 animate-pulse rounded-2xl"></div>
+          <div v-if="loadingWords" class="space-y-3">
+            <div v-for="i in 3" :key="i" class="h-24 bg-slate-100 animate-pulse rounded-2xl"></div>
           </div>
 
-          <div v-else-if="words.length > 0" class="space-y-4">
+          <div v-else-if="words.length > 0" class="space-y-3.5">
             <div 
               v-for="word in words" 
               :key="word.id"
-              class="glass-card p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition"
+              class="bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-slate-300 transition"
             >
-              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
                 
                 <!-- Word Title & Audio preview -->
                 <div class="flex items-center gap-3">
@@ -152,10 +152,10 @@
                     :showLabel="false"
                   />
                   <div>
-                    <h4 class="text-xl font-bold font-fredoka text-white capitalize">
+                    <h4 class="text-lg font-bold font-fredoka text-slate-800 capitalize leading-tight">
                       {{ word.englishWord }}
                     </h4>
-                    <p class="text-xs text-slate-400">
+                    <p class="text-xs text-slate-500">
                       Español: {{ word.spanishMeaning }}
                     </p>
                   </div>
@@ -165,7 +165,7 @@
                 <div class="flex items-center gap-2">
                   <button 
                     @click="openWordModal(word)"
-                    class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition"
+                    class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                   >
                     <Edit2 class="w-3.5 h-3.5" />
                     <span>Editar / Fotos</span>
@@ -173,7 +173,7 @@
 
                   <button 
                     @click="confirmDeleteWord(word)"
-                    class="p-1.5 hover:bg-rose-500/20 rounded-xl text-slate-400 hover:text-rose-400 transition"
+                    class="p-1.5 hover:bg-rose-100 rounded-xl text-slate-400 hover:text-rose-600 transition cursor-pointer"
                     title="Eliminar Palabra"
                   >
                     <Trash2 class="w-4 h-4" />
@@ -184,18 +184,18 @@
 
               <!-- Multi-Image Thumbnails Gallery & Main Image Selector -->
               <div>
-                <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
                   <span>Imágenes (Toca ⭐ para elegir la imagen principal de estudio):</span>
-                  <span v-if="word.images?.length > 1" class="text-amber-400">📸 {{ word.images.length }} fotos (Variación en tests)</span>
+                  <span v-if="word.images?.length > 1" class="text-amber-600">📸 {{ word.images.length }} fotos</span>
                 </div>
 
-                <div v-if="word.images && word.images.length > 0" class="flex flex-wrap gap-3">
+                <div v-if="word.images && word.images.length > 0" class="flex flex-wrap gap-2.5">
                   <div 
                     v-for="(imgUrl, imgIdx) in word.images" 
                     :key="imgIdx"
                     :class="[
-                      'relative group/img w-20 h-20 rounded-xl overflow-hidden bg-slate-950 border-2 transition flex-shrink-0',
-                      imgIdx === 0 ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-slate-800 opacity-80 hover:opacity-100'
+                      'relative group/img w-18 h-18 rounded-xl overflow-hidden bg-white border-2 transition flex-shrink-0 shadow-xs',
+                      imgIdx === 0 ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-slate-200 hover:border-slate-300'
                     ]"
                   >
                     <img :src="imgUrl" :alt="word.englishWord" class="w-full h-full object-cover" />
@@ -203,34 +203,34 @@
                     <!-- Main Image ⭐ Badge -->
                     <span 
                       v-if="imgIdx === 0" 
-                      class="absolute top-1 left-1 bg-amber-500 text-slate-950 px-1 py-0.5 rounded font-bold text-[9px] flex items-center gap-0.5 shadow-md"
+                      class="absolute top-1 left-1 bg-amber-500 text-white px-1 py-0.5 rounded font-bold text-[9px] flex items-center gap-0.5 shadow-sm"
                     >
-                      <Star class="w-2.5 h-2.5 fill-slate-950" /> Principal
+                      <Star class="w-2.5 h-2.5 fill-white" /> Principal
                     </span>
 
                     <!-- Make Main Button (if not already main) -->
                     <button 
                       v-else
                       @click="setAsMainImage(word, imgIdx)"
-                      class="absolute top-1 left-1 p-1 rounded-md bg-slate-900/90 text-amber-300 opacity-0 group-hover/img:opacity-100 transition hover:scale-110"
+                      class="absolute top-1 left-1 p-1 rounded-md bg-white/90 text-amber-500 opacity-0 group-hover/img:opacity-100 transition hover:scale-110 shadow-sm cursor-pointer"
                       title="Hacer esta la imagen principal de estudio"
                     >
-                      <Star class="w-3.5 h-3.5 fill-amber-300" />
+                      <Star class="w-3.5 h-3.5 fill-amber-400" />
                     </button>
 
-                    <!-- Delete Photo Button -->
+                    <!-- Delete image from word -->
                     <button 
                       @click="removeImageFromWord(word, imgIdx)"
-                      class="absolute top-1 right-1 p-1 rounded-full bg-rose-600/90 text-white opacity-0 group-hover/img:opacity-100 transition hover:scale-110"
-                      title="Eliminar foto"
+                      class="absolute bottom-1 right-1 p-1 rounded-md bg-white/90 text-rose-500 opacity-0 group-hover/img:opacity-100 transition hover:scale-110 shadow-sm cursor-pointer"
+                      title="Quitar foto"
                     >
                       <X class="w-3 h-3" />
                     </button>
                   </div>
                 </div>
 
-                <div v-else class="text-xs text-slate-500 italic">
-                  Sin imágenes asignadas aún. Haz clic en "Editar / Fotos" para subir imágenes.
+                <div v-else class="text-xs text-slate-400 italic">
+                  Sin imágenes asignadas. Haz clic en "Editar / Fotos" para añadir imágenes.
                 </div>
               </div>
 
@@ -240,11 +240,11 @@
           <!-- Empty Words State -->
           <div v-else class="text-center py-12">
             <span class="text-5xl block mb-3">📝</span>
-            <h4 class="text-lg font-bold font-fredoka text-white mb-1">No hay palabras en este grupo</h4>
-            <p class="text-xs text-slate-400 mb-4">Agrega palabras como "bedroom", "kitchen", etc., y asígnales sus imágenes.</p>
+            <h4 class="text-lg font-bold font-fredoka text-slate-800 mb-1">No hay palabras en este grupo</h4>
+            <p class="text-xs text-slate-500 mb-4">Agrega palabras como "bedroom", "kitchen", etc., y asígnales sus imágenes.</p>
             <button 
               @click="openWordModal()" 
-              class="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-fredoka text-xs font-semibold"
+              class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-fredoka text-xs font-semibold shadow-sm cursor-pointer"
             >
               + Crear Primera Palabra
             </button>
@@ -253,10 +253,10 @@
         </div>
 
         <!-- No category selected prompt -->
-        <div v-else class="glass-card p-12 rounded-3xl text-center text-slate-400">
+        <div v-else class="bg-white p-12 rounded-3xl text-center text-slate-500 border border-slate-200 shadow-sm">
           <span class="text-5xl block mb-3">👈</span>
-          <h3 class="text-lg font-bold font-fredoka text-white">Selecciona una categoría de la izquierda</h3>
-          <p class="text-xs text-slate-400">Para administrar sus palabras e imágenes asociadas.</p>
+          <h3 class="text-lg font-bold font-fredoka text-slate-800">Selecciona una categoría de la izquierda</h3>
+          <p class="text-xs text-slate-500">Para administrar sus palabras e imágenes asociadas.</p>
         </div>
 
       </div>
@@ -264,60 +264,60 @@
     </div>
 
     <!-- MODAL 1: CREATE / EDIT CATEGORY -->
-    <div v-if="showCategoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-md w-full p-6 sm:p-8 rounded-3xl border border-slate-700 shadow-2xl relative">
-        <button @click="showCategoryModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2">
+    <div v-if="showCategoryModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white max-w-md w-full p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xl relative">
+        <button @click="showCategoryModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 cursor-pointer">
           <X class="w-5 h-5" />
         </button>
 
-        <h3 class="text-xl font-bold font-fredoka text-white mb-4">
+        <h3 class="text-xl font-bold font-fredoka text-slate-800 mb-4">
           {{ editingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}
         </h3>
 
         <form @submit.prevent="handleSaveCategory" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre en Español (ej: Partes de la casa)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre en Español (ej: Partes de la casa)</label>
             <input 
               v-model="categoryForm.name" 
               required 
               type="text"
               placeholder="Ej: Partes de la casa"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre en Inglés (ej: Parts of the House)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre en Inglés (ej: Parts of the House)</label>
             <input 
               v-model="categoryForm.englishName" 
               required 
               type="text"
               placeholder="Ej: Parts of the House"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Emoji / Icono Representativo</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Emoji / Icono Representativo</label>
             <input 
               v-model="categoryForm.icon" 
               type="text"
               placeholder="🏠, 🐶, 🍎..."
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-4">
+          <div class="flex items-center justify-end gap-3 pt-3">
             <button 
               type="button" 
               @click="showCategoryModal = false" 
-              class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
+              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
-              class="px-5 py-2 rounded-xl bg-pink-600 text-white font-fredoka text-xs font-semibold hover:bg-pink-500"
+              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer"
             >
               Guardar Categoría
             </button>
@@ -327,28 +327,28 @@
     </div>
 
     <!-- MODAL 2: CREATE / EDIT WORD & MULTI-IMAGE UPLOAD -->
-    <div v-if="showWordModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div class="glass-panel max-w-lg w-full p-6 sm:p-8 rounded-3xl border border-slate-700 shadow-2xl relative my-8">
-        <button @click="showWordModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2">
+    <div v-if="showWordModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xl relative my-8">
+        <button @click="showWordModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 cursor-pointer">
           <X class="w-5 h-5" />
         </button>
 
-        <h3 class="text-xl font-bold font-fredoka text-white mb-2">
+        <h3 class="text-xl font-bold font-fredoka text-slate-800 mb-1">
           {{ editingWord ? 'Editar Palabra e Imágenes' : 'Nueva Palabra' }}
         </h3>
-        <p class="text-xs text-indigo-300 mb-6">Categoría: {{ selectedCategory.name }}</p>
+        <p class="text-xs text-sky-600 mb-5 font-semibold">Categoría: {{ selectedCategory.name }}</p>
 
         <form @submit.prevent="handleSaveWord" class="space-y-4">
           
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Palabra en Inglés (ej: bedroom)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Palabra en Inglés (ej: bedroom)</label>
             <div class="flex items-center gap-2">
               <input 
                 v-model="wordForm.englishWord" 
                 required 
                 type="text"
                 placeholder="Ej: bedroom"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
               />
               <AudioButton 
                 v-if="wordForm.englishWord"
@@ -361,23 +361,23 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Traducción en Español (ej: Dormitorio / Habitación)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Traducción en Español (ej: Dormitorio / Habitación)</label>
             <input 
               v-model="wordForm.spanishMeaning" 
               required 
               type="text"
               placeholder="Ej: Habitacion / Dormitorio"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <!-- MULTI-IMAGE UPLOAD AREA -->
-          <div class="border-t border-slate-800 pt-4">
-            <label class="block text-xs font-semibold text-slate-200 mb-2">
+          <div class="border-t border-slate-100 pt-4">
+            <label class="block text-xs font-semibold text-slate-700 mb-2">
               📸 Imágenes (La 1ª foto es la principal de estudio):
             </label>
 
-            <div class="border-2 border-dashed border-slate-700 hover:border-pink-500/80 rounded-2xl p-4 text-center bg-slate-950/60 transition cursor-pointer relative mb-3">
+            <div class="border-2 border-dashed border-slate-300 hover:border-sky-400 rounded-2xl p-4 text-center bg-slate-50/70 transition cursor-pointer relative mb-3">
               <input 
                 type="file" 
                 multiple 
@@ -385,43 +385,43 @@
                 @change="handleFileUpload" 
                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
               />
-              <Upload class="w-8 h-8 mx-auto text-pink-400 mb-2" />
-              <p class="text-xs font-semibold text-slate-200">
+              <Upload class="w-7 h-7 mx-auto text-sky-500 mb-1.5" />
+              <p class="text-xs font-semibold text-slate-700">
                 Haz clic o arrastra fotos desde tu computador
               </p>
-              <p class="text-[10px] text-slate-400 mt-1">
+              <p class="text-[10px] text-slate-400 mt-0.5">
                 Soporta JPG, PNG, WEBP. Puedes seleccionar múltiples fotos.
               </p>
             </div>
 
-            <div class="flex items-center gap-2 mb-4">
+            <div class="flex items-center gap-2 mb-3">
               <input 
                 v-model="newImageUrl" 
                 type="text"
                 placeholder="O pega el enlace URL de una imagen..."
-                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:border-sky-500"
               />
               <button 
                 type="button"
                 @click="addImageUrl" 
-                class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700"
+                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 cursor-pointer flex-shrink-0"
               >
                 + Añadir URL
               </button>
             </div>
 
-            <div v-if="wordForm.images.length > 0" class="space-y-2 max-h-48 overflow-y-auto p-2 bg-slate-950/80 rounded-xl border border-slate-800">
+            <div v-if="wordForm.images.length > 0" class="space-y-2 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200">
               <div 
                 v-for="(img, index) in wordForm.images" 
                 :key="index"
                 :class="[
-                  'flex items-center justify-between gap-2 p-2 rounded-lg text-xs border transition',
-                  index === 0 ? 'bg-amber-950/40 border-amber-500/60' : 'bg-slate-900 border-slate-800'
+                  'flex items-center justify-between gap-2 p-2 rounded-lg text-xs border transition bg-white',
+                  index === 0 ? 'border-amber-400 shadow-xs' : 'border-slate-200'
                 ]"
               >
                 <div class="flex items-center gap-2 overflow-hidden">
                   <img :src="img" class="w-8 h-8 rounded object-cover flex-shrink-0" />
-                  <span class="truncate text-slate-300 text-[11px] max-w-[180px]">
+                  <span class="truncate text-slate-700 text-[11px] max-w-[180px]">
                     {{ index === 0 ? '⭐ Imagen Principal de Estudio' : `Foto ${index + 1}` }}
                   </span>
                 </div>
@@ -431,7 +431,7 @@
                     v-if="index !== 0"
                     type="button"
                     @click="makeFormImageMain(index)"
-                    class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-bold border border-slate-700"
+                    class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-amber-600 text-[10px] font-bold border border-slate-200 cursor-pointer"
                   >
                     ⭐ Principal
                   </button>
@@ -439,7 +439,7 @@
                   <button 
                     type="button" 
                     @click="removeFormImage(index)" 
-                    class="text-rose-400 hover:text-rose-300 p-1"
+                    class="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
                   >
                     <X class="w-3.5 h-3.5" />
                   </button>
@@ -449,17 +449,17 @@
 
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
             <button 
               type="button" 
               @click="showWordModal = false" 
-              class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
+              class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 cursor-pointer"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
-              class="px-5 py-2 rounded-xl bg-pink-600 text-white font-fredoka text-xs font-semibold hover:bg-pink-500"
+              class="px-5 py-2 rounded-xl bg-sky-500 text-white font-fredoka text-xs font-semibold hover:bg-sky-600 shadow-sm cursor-pointer"
             >
               Guardar Palabra
             </button>
