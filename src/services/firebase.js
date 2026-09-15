@@ -101,11 +101,19 @@ export const saveFirebaseCategory = async (category) => {
 }
 
 export const deleteFirebaseCategory = async (id) => {
+  // 1. Delete all words in Firebase belonging to this category
   try {
-    await deleteDoc(doc(db, 'categories', id))
+    const colRef = collection(db, 'words')
+    const q = query(colRef, where('categoryId', '==', id))
+    const snapshot = await getDocs(q)
+    const deletePromises = snapshot.docs.map(docSnap => deleteDoc(doc(db, 'words', docSnap.id)))
+    await Promise.all(deletePromises)
   } catch (err) {
-    console.error('Error deleting Firebase category:', err)
+    console.error('Error deleting associated Firebase words:', err)
   }
+
+  // 2. Delete the category doc
+  await deleteDoc(doc(db, 'categories', id))
 }
 
 // --- FIRESTORE WORDS SERVICES ---
@@ -123,21 +131,14 @@ export const fetchFirebaseWordsByCategory = async (categoryId) => {
 }
 
 export const saveFirebaseWord = async (word) => {
-  try {
-    const docRef = doc(db, 'words', word.id)
-    await setDoc(docRef, {
-      ...word,
-      updatedAt: new Date().toISOString()
-    }, { merge: true })
-  } catch (err) {
-    console.error('Error saving Firebase word:', err)
-  }
+  const docRef = doc(db, 'words', word.id)
+  await setDoc(docRef, {
+    ...word,
+    updatedAt: new Date().toISOString()
+  }, { merge: true })
 }
 
 export const deleteFirebaseWord = async (id) => {
-  try {
-    await deleteDoc(doc(db, 'words', id))
-  } catch (err) {
-    console.error('Error deleting Firebase word:', err)
-  }
+  await deleteDoc(doc(db, 'words', id))
 }
+

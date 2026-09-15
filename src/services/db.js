@@ -97,9 +97,20 @@ export const getCategories = async () => {
   // 1. Return local IndexedDB cache instantly (< 5ms)
   const localList = await getLocalCategories()
 
-  // 2. Trigger background sync with Firebase Cloud
+  // 2. Trigger background sync with Firebase Cloud (Mirroring: put updated/new & prune deleted)
   fetchFirebaseCategories().then(async (fbList) => {
-    if (fbList && fbList.length > 0) {
+    if (fbList) {
+      const fbIds = new Set(fbList.map(c => c.id))
+      const currentLocal = await getLocalCategories()
+      
+      // Delete local categories that no longer exist in Firebase
+      for (const locCat of currentLocal) {
+        if (!fbIds.has(locCat.id)) {
+          await runTransaction('categories', 'readwrite', (store) => store.delete(locCat.id))
+        }
+      }
+
+      // Upsert current Firebase categories to local cache
       for (const cat of fbList) {
         await runTransaction('categories', 'readwrite', (store) => store.put(cat))
       }
@@ -139,20 +150,24 @@ export const saveCategory = async (category) => {
   // 1. Instant local write
   await runTransaction('categories', 'readwrite', (store) => store.put(data))
 
-  // 2. Non-blocking background Cloud save
-  saveFirebaseCategory(data).catch(err => console.error('Firebase save error:', err))
+  // 2. Cloud save
+  await saveFirebaseCategory(data).catch(err => console.error('Firebase save error:', err))
 
   return data
 }
 
 export const deleteCategory = async (id) => {
-  const words = await getWordsByCategory(id)
+  // 1. Delete associated local words
+  const words = await getLocalWordsByCategory(id)
   for (const w of words) {
-    await deleteWord(w.id)
+    await runTransaction('words', 'readwrite', (store) => store.delete(w.id))
   }
 
+  // 2. Delete local category
   await runTransaction('categories', 'readwrite', (store) => store.delete(id))
-  deleteFirebaseCategory(id).catch(err => console.error('Firebase delete error:', err))
+
+  // 3. Delete from Firebase Firestore (both category and all its words)
+  await deleteFirebaseCategory(id)
 }
 
 // --- WORDS API (INSTANT CACHE + BACKGROUND FIREBASE SYNC) ---
@@ -161,9 +176,20 @@ export const getWordsByCategory = async (categoryId) => {
   // 1. Return local cache instantly (< 5ms)
   const localWords = await getLocalWordsByCategory(categoryId)
 
-  // 2. Background sync
+  // 2. Background sync (Mirroring: put updated/new & prune deleted)
   fetchFirebaseWordsByCategory(categoryId).then(async (fbWords) => {
-    if (fbWords && fbWords.length > 0) {
+    if (fbWords) {
+      const fbIds = new Set(fbWords.map(w => w.id))
+      const currentLocal = await getLocalWordsByCategory(categoryId)
+
+      // Delete local words that no longer exist in Firebase
+      for (const locWord of currentLocal) {
+        if (!fbIds.has(locWord.id)) {
+          await runTransaction('words', 'readwrite', (store) => store.delete(locWord.id))
+        }
+      }
+
+      // Upsert current Firebase words
       for (const w of fbWords) {
         await runTransaction('words', 'readwrite', (store) => store.put(w))
       }
@@ -221,7 +247,7 @@ export const saveWord = async (word) => {
 
 export const deleteWord = async (id) => {
   await runTransaction('words', 'readwrite', (store) => store.delete(id))
-  deleteFirebaseWord(id).catch(err => console.error('Firebase delete word error:', err))
+  await deleteFirebaseWord(id)
 }
 
 // --- QUIZ RESULTS HISTORY ---

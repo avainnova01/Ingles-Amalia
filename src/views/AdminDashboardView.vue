@@ -578,12 +578,20 @@ const handleSaveCategory = async () => {
 
 const confirmDeleteCategory = async (cat) => {
   if (confirm(`¿Estás seguro de eliminar la categoría "${cat.name}" y todas sus palabras?`)) {
-    await deleteCategory(cat.id)
-    if (selectedCategory.value?.id === cat.id) {
-      selectedCategory.value = null
-      words.value = []
+    try {
+      await deleteCategory(cat.id)
+      if (selectedCategory.value?.id === cat.id) {
+        selectedCategory.value = null
+        words.value = []
+      }
+      await loadCategories()
+      syncSuccess.value = true
+      syncMessage.value = `Categoría "${cat.name}" y sus palabras fueron eliminadas correctamente de la base de datos.`
+    } catch (err) {
+      console.error('Error deleting category:', err)
+      syncSuccess.value = false
+      syncMessage.value = `Error al eliminar de Firebase: ${err.message}`
     }
-    await loadCategories()
   }
 }
 
@@ -676,9 +684,17 @@ const removeImageFromWord = async (word, imgIdx) => {
 
 const confirmDeleteWord = async (word) => {
   if (confirm(`¿Eliminar la palabra "${word.englishWord}"?`)) {
-    await deleteWord(word.id)
-    await selectCategory(selectedCategory.value)
-    await loadCategories()
+    try {
+      await deleteWord(word.id)
+      await selectCategory(selectedCategory.value)
+      await loadCategories()
+      syncSuccess.value = true
+      syncMessage.value = `Palabra "${word.englishWord}" eliminada de la base de datos.`
+    } catch (err) {
+      console.error('Error deleting word:', err)
+      syncSuccess.value = false
+      syncMessage.value = `Error al eliminar de Firebase: ${err.message}`
+    }
   }
 }
 
