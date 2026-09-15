@@ -473,9 +473,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Settings, Plus, Layout as FolderLayout, Edit2, Trash2, X, Upload, Star } from 'lucide-vue-next'
-import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord } from '../services/db'
+import { getCategories, saveCategory, deleteCategory, getWordsByCategory, saveWord, deleteWord, subscribeCategories } from '../services/db'
 import AudioButton from '../components/AudioButton.vue'
 
 const categories = ref([])
@@ -682,7 +682,22 @@ const confirmDeleteWord = async (word) => {
   }
 }
 
+let unsubscribe = null
+
 onMounted(() => {
   loadCategories()
+
+  unsubscribe = subscribeCategories(async (list) => {
+    if (list && list.length > 0) {
+      categories.value = list
+      if (!selectedCategory.value) {
+        selectCategory(list[0])
+      }
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (unsubscribe) unsubscribe()
 })
 </script>

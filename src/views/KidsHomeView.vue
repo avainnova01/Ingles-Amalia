@@ -28,7 +28,7 @@
       <div v-for="i in 4" :key="i" class="h-56 rounded-3xl bg-slate-200/60 animate-pulse border border-slate-200"></div>
     </div>
 
-    <!-- 2-Column Mobile Category Cards (Faithful to the reference app!) -->
+    <!-- 2-Column Mobile Category Cards -->
     <div v-else-if="categories.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6 pb-20">
       <div 
         v-for="(cat, index) in categories" 
@@ -89,18 +89,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Gamepad2 } from 'lucide-vue-next'
-import { getCategories, getWordsByCategory } from '../services/db'
+import { getCategories, getWordsByCategory, subscribeCategories } from '../services/db'
 import { seedInitialDataIfEmpty } from '../services/seedData'
 
 const router = useRouter()
 const categories = ref([])
 const wordCounts = ref({})
 const loading = ref(true)
+let unsubscribe = null
 
-// Vibrant, friendly solid colors matching the mobile app reference (Screenshot 1)
+// Vibrant, friendly solid colors matching the mobile app reference
 const solidPalette = [
   '#00BCD4', // Cyan (School)
   '#E53935', // Crimson Red (Kitchen)
@@ -125,19 +126,22 @@ const goToStudy = (catId) => {
   router.push(`/study/${catId}`)
 }
 
+const loadWordCounts = async (list) => {
+  const counts = {}
+  for (const cat of list) {
+    const words = await getWordsByCategory(cat.id)
+    counts[cat.id] = words.length
+  }
+  wordCounts.value = counts
+}
+
 const loadData = async () => {
   loading.value = true
   try {
     await seedInitialDataIfEmpty()
     const list = await getCategories()
     categories.value = list
-
-    const counts = {}
-    for (const cat of list) {
-      const words = await getWordsByCategory(cat.id)
-      counts[cat.id] = words.length
-    }
-    wordCounts.value = counts
+    await loadWordCounts(list)
   } catch (error) {
     console.error('Error loading categories for home:', error)
   } finally {
@@ -147,5 +151,18 @@ const loadData = async () => {
 
 onMounted(() => {
   loadData()
+
+  // Real-time synchronization: if any category is added or edited in Firestore, update instantly!
+  unsubscribe = subscribeCategories(async (cloudList) => {
+    if (cloudList && cloudList.length > 0) {
+      categories.value = cloudList
+      await loadWordCounts(cloudList)
+      loading.value = false
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (unsubscribe) unsubscribe()
 })
 </script>

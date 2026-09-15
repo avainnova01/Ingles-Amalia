@@ -1,7 +1,8 @@
-// Database service with Stale-While-Revalidate strategy for Instant ⚡ Performance.
+// Database service with Cloud-First Firebase Firestore synchronization & local IndexedDB offline fallback.
 
 import { 
   fetchFirebaseCategories, 
+  subscribeFirebaseCategories,
   saveFirebaseCategory, 
   deleteFirebaseCategory,
   fetchFirebaseWordsByCategory,
@@ -56,9 +57,14 @@ const runTransaction = async (storeName, mode, callback) => {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, mode)
     const store = tx.objectStore(storeName)
-    const request = callback(store)
+    let request
+    try {
+      request = callback(store)
+    } catch (err) {
+      return reject(err)
+    }
 
-    tx.oncomplete = () => resolve(request.result)
+    tx.oncomplete = () => resolve(request ? request.result : undefined)
     tx.onerror = () => reject(tx.error)
   })
 }
@@ -91,37 +97,50 @@ const getLocalWordsByCategory = async (categoryId) => {
   })
 }
 
-// --- CATEGORIES API (INSTANT CACHE + BACKGROUND FIREBASE SYNC) ---
+// --- CATEGORIES API (CLOUD FIRST + OFFLINE FALLBACK) ---
 
 export const getCategories = async () => {
-  // 1. Return local IndexedDB cache instantly (< 5ms)
-  const localList = await getLocalCategories()
-
-  // 2. Trigger background sync with Firebase Cloud
-  fetchFirebaseCategories().then(async (fbList) => {
-    if (fbList && fbList.length > 0) {
-      for (const cat of fbList) {
-        await runTransaction('categories', 'readwrite', (store) => store.put(cat))
+  try {
+    // 1. Fetch fresh list from Firebase Firestore Cloud
+    const fbCategories = await fetchFirebaseCategories()
+    if (fbCategories && fbCategories.length > 0) {
+      // Sync local cache: clear old cache and save all current cloud categories
+      try {
+        await runTransaction('categories', 'readwrite', (store) => {
+          store.clear()
+          for (const cat of fbCategories) {
+            store.put(cat)
+          }
+        })
+      } catch (cacheErr) {
+        console.warn('Could not update local cache:', cacheErr)
       }
+      return fbCategories
     }
-  }).catch(err => console.warn('Background Firebase sync:', err))
-
-  // If local list is empty, wait for Firebase
-  if (localList.length === 0) {
-    try {
-      const fbCategories = await fetchFirebaseCategories()
-      if (fbCategories && fbCategories.length > 0) {
-        for (const cat of fbCategories) {
-          await runTransaction('categories', 'readwrite', (store) => store.put(cat))
-        }
-        return fbCategories
-      }
-    } catch (e) {
-      console.warn('Firebase offline:', e)
-    }
+  } catch (e) {
+    console.warn('Firebase fetch categories failed, using local cache:', e)
   }
 
-  return localList
+  // 2. Offline fallback to local IndexedDB
+  return await getLocalCategories()
+}
+
+export const subscribeCategories = (callback) => {
+  return subscribeFirebaseCategories(async (cloudList) => {
+    if (cloudList && cloudList.length > 0) {
+      try {
+        await runTransaction('categories', 'readwrite', (store) => {
+          store.clear()
+          for (const cat of cloudList) {
+            store.put(cat)
+          }
+        })
+      } catch (e) {
+        console.warn('Error updating local cache on category snapshot:', e)
+      }
+    }
+    callback(cloudList)
+  })
 }
 
 export const getCategoryById = async (id) => {
@@ -132,15 +151,15 @@ export const getCategoryById = async (id) => {
 export const saveCategory = async (category) => {
   const data = {
     ...category,
-    order: category.order || Date.now(),
+    order: category.order !== undefined ? category.order : Date.now(),
     updatedAt: new Date().toISOString()
   }
   
-  // 1. Instant local write
-  await runTransaction('categories', 'readwrite', (store) => store.put(data))
+  // 1. Save to Cloud Firestore
+  await saveFirebaseCategory(data)
 
-  // 2. Non-blocking background Cloud save
-  saveFirebaseCategory(data).catch(err => console.error('Firebase save error:', err))
+  // 2. Save to local IndexedDB
+  await runTransaction('categories', 'readwrite', (store) => store.put(data))
 
   return data
 }
@@ -151,40 +170,26 @@ export const deleteCategory = async (id) => {
     await deleteWord(w.id)
   }
 
+  await deleteFirebaseCategory(id)
   await runTransaction('categories', 'readwrite', (store) => store.delete(id))
-  deleteFirebaseCategory(id).catch(err => console.error('Firebase delete error:', err))
 }
 
-// --- WORDS API (INSTANT CACHE + BACKGROUND FIREBASE SYNC) ---
+// --- WORDS API (CLOUD FIRST + OFFLINE FALLBACK) ---
 
 export const getWordsByCategory = async (categoryId) => {
-  // 1. Return local cache instantly (< 5ms)
-  const localWords = await getLocalWordsByCategory(categoryId)
-
-  // 2. Background sync
-  fetchFirebaseWordsByCategory(categoryId).then(async (fbWords) => {
+  try {
+    const fbWords = await fetchFirebaseWordsByCategory(categoryId)
     if (fbWords && fbWords.length > 0) {
       for (const w of fbWords) {
         await runTransaction('words', 'readwrite', (store) => store.put(w))
       }
+      return fbWords
     }
-  }).catch(err => console.warn('Background Firebase words sync:', err))
-
-  if (localWords.length === 0) {
-    try {
-      const fbWords = await fetchFirebaseWordsByCategory(categoryId)
-      if (fbWords && fbWords.length > 0) {
-        for (const w of fbWords) {
-          await runTransaction('words', 'readwrite', (store) => store.put(w))
-        }
-        return fbWords
-      }
-    } catch (e) {
-      console.warn('Firebase offline:', e)
-    }
+  } catch (err) {
+    console.warn('Firebase words sync warning, falling back to local cache:', err)
   }
 
-  return localWords
+  return await getLocalWordsByCategory(categoryId)
 }
 
 export const getAllWords = async () => {
@@ -210,18 +215,18 @@ export const saveWord = async (word) => {
     updatedAt: new Date().toISOString()
   }
 
-  // 1. Instant local write
-  await runTransaction('words', 'readwrite', (store) => store.put(data))
+  // 1. Save to Firebase Cloud
+  await saveFirebaseWord(data)
 
-  // 2. Non-blocking background cloud save
-  saveFirebaseWord(data).catch(err => console.error('Firebase save word error:', err))
+  // 2. Save locally
+  await runTransaction('words', 'readwrite', (store) => store.put(data))
 
   return data
 }
 
 export const deleteWord = async (id) => {
+  await deleteFirebaseWord(id)
   await runTransaction('words', 'readwrite', (store) => store.delete(id))
-  deleteFirebaseWord(id).catch(err => console.error('Firebase delete word error:', err))
 }
 
 // --- QUIZ RESULTS HISTORY ---

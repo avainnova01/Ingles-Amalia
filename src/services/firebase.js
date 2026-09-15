@@ -9,7 +9,8 @@ import {
   deleteDoc,
   query,
   orderBy,
-  where
+  where,
+  onSnapshot
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -79,12 +80,39 @@ export const uploadImageToImgbb = async (imageInput) => {
 export const fetchFirebaseCategories = async () => {
   try {
     const colRef = collection(db, 'categories')
-    const q = query(colRef, orderBy('order', 'asc'))
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    // Note: Do NOT use orderBy('order', 'asc') in the Firestore query because Firestore 
+    // automatically ignores/omits any documents that do not have the 'order' property!
+    const snapshot = await getDocs(colRef)
+    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    list.sort((a, b) => {
+      const orderA = a.order !== undefined && a.order !== null ? a.order : 9999
+      const orderB = b.order !== undefined && b.order !== null ? b.order : 9999
+      return orderA - orderB
+    })
+    return list
   } catch (err) {
     console.error('Error fetching Firebase categories:', err)
     return []
+  }
+}
+
+export const subscribeFirebaseCategories = (callback) => {
+  try {
+    const colRef = collection(db, 'categories')
+    return onSnapshot(colRef, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      list.sort((a, b) => {
+        const orderA = a.order !== undefined && a.order !== null ? a.order : 9999
+        const orderB = b.order !== undefined && b.order !== null ? b.order : 9999
+        return orderA - orderB
+      })
+      callback(list)
+    }, (err) => {
+      console.error('Error in categories real-time listener:', err)
+    })
+  } catch (err) {
+    console.error('Error setting up categories subscription:', err)
+    return () => {}
   }
 }
 
@@ -93,6 +121,7 @@ export const saveFirebaseCategory = async (category) => {
     const docRef = doc(db, 'categories', category.id)
     await setDoc(docRef, {
       ...category,
+      order: category.order !== undefined ? category.order : Date.now(),
       updatedAt: new Date().toISOString()
     }, { merge: true })
   } catch (err) {
