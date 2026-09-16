@@ -199,6 +199,8 @@ export const getAllWords = async () => {
 
 export const saveWord = async (word, onProgress) => {
   const processedImages = []
+  const deleteUrls = { ...(word.deleteUrls || {}) }
+
   if (word.images && Array.isArray(word.images)) {
     const rawImagesToUpload = word.images.filter(img => typeof img === 'string' && img.startsWith('data:image'))
     const totalToUpload = rawImagesToUpload.length
@@ -212,8 +214,14 @@ export const saveWord = async (word, onProgress) => {
         }
         // Ensure image is compressed before upload for maximum speed
         const optimizedImg = await compressImage(img)
-        const cloudUrl = await uploadImageToImgbb(optimizedImg)
+        const uploadResult = await uploadImageToImgbb(optimizedImg)
+        const cloudUrl = typeof uploadResult === 'object' ? uploadResult.url : uploadResult
+        const deleteUrl = typeof uploadResult === 'object' ? uploadResult.deleteUrl : null
+
         processedImages.push(cloudUrl)
+        if (deleteUrl) {
+          deleteUrls[cloudUrl] = deleteUrl
+        }
       } else {
         processedImages.push(img)
       }
@@ -227,6 +235,7 @@ export const saveWord = async (word, onProgress) => {
   const data = {
     ...word,
     images: processedImages,
+    deleteUrls,
     updatedAt: new Date().toISOString()
   }
 

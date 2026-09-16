@@ -634,7 +634,8 @@ const openWordModal = (word = null) => {
   if (word) {
     wordForm.value = {
       ...word,
-      images: Array.isArray(word.images) ? [...word.images] : []
+      images: Array.isArray(word.images) ? [...word.images] : [],
+      deleteUrls: word.deleteUrls ? { ...word.deleteUrls } : {}
     }
   } else {
     wordForm.value = {
@@ -642,7 +643,8 @@ const openWordModal = (word = null) => {
       categoryId: selectedCategory.value.id,
       englishWord: '',
       spanishMeaning: '',
-      images: []
+      images: [],
+      deleteUrls: {}
     }
   }
   showWordModal.value = true
@@ -673,6 +675,19 @@ const makeFormImageMain = (idx) => {
 }
 
 const removeFormImage = (idx) => {
+  const imgUrl = wordForm.value.images[idx]
+  const deleteUrl = wordForm.value.deleteUrls?.[imgUrl]
+
+  if (deleteUrl) {
+    const shouldOpen = confirm(
+      '¿Deseas abrir la página de ImgBB en una pestaña para confirmar la eliminación definitiva de esta imagen del servidor?'
+    )
+    if (shouldOpen) {
+      window.open(deleteUrl, '_blank')
+    }
+    delete wordForm.value.deleteUrls[imgUrl]
+  }
+
   wordForm.value.images.splice(idx, 1)
 }
 
@@ -710,15 +725,47 @@ const handleSaveWord = async () => {
 }
 
 const removeImageFromWord = async (word, imgIdx) => {
+  const imgUrl = word.images[imgIdx]
+  const deleteUrl = word.deleteUrls?.[imgUrl]
+
+  if (deleteUrl) {
+    const shouldOpen = confirm(
+      '¿Deseas abrir la página de ImgBB en una pestaña para confirmar la eliminación definitiva de esta foto del servidor?'
+    )
+    if (shouldOpen) {
+      window.open(deleteUrl, '_blank')
+    }
+  }
+
   const updatedImages = [...word.images]
   updatedImages.splice(imgIdx, 1)
-  const updatedWord = { ...word, images: updatedImages }
+
+  const updatedDeleteUrls = { ...(word.deleteUrls || {}) }
+  if (imgUrl && updatedDeleteUrls[imgUrl]) {
+    delete updatedDeleteUrls[imgUrl]
+  }
+
+  const updatedWord = { 
+    ...word, 
+    images: updatedImages,
+    deleteUrls: updatedDeleteUrls 
+  }
   await saveWord(updatedWord)
   await selectCategory(selectedCategory.value)
 }
 
 const confirmDeleteWord = async (word) => {
   if (confirm(`¿Eliminar la palabra "${word.englishWord}"?`)) {
+    const deleteUrls = Object.values(word.deleteUrls || {})
+    if (deleteUrls.length > 0) {
+      const shouldOpen = confirm(
+        `Esta palabra tiene ${deleteUrls.length} foto(s) en ImgBB. ¿Deseas abrir los enlaces para eliminarlas también de ImgBB?`
+      )
+      if (shouldOpen) {
+        deleteUrls.forEach(url => window.open(url, '_blank'))
+      }
+    }
+
     await deleteWord(word.id)
     await selectCategory(selectedCategory.value)
     await loadCategories()

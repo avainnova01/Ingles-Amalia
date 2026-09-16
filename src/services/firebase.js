@@ -37,7 +37,7 @@ const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || ''
 export const uploadImageToImgbb = async (imageInput) => {
   if (!IMGBB_API_KEY) {
     console.warn('Falta VITE_IMGBB_API_KEY. Usando fallback local.')
-    return imageInput
+    return { url: imageInput, deleteUrl: null }
   }
 
   try {
@@ -52,7 +52,7 @@ export const uploadImageToImgbb = async (imageInput) => {
         reader.readAsDataURL(imageInput)
       })
     } else {
-      return imageInput // Return as is if already a web URL
+      return { url: imageInput, deleteUrl: null } // Return as is if already a web URL
     }
 
     const formData = new FormData()
@@ -66,12 +66,15 @@ export const uploadImageToImgbb = async (imageInput) => {
 
     const result = await response.json()
     if (result.success && result.data && result.data.url) {
-      return result.data.url
+      return {
+        url: result.data.url,
+        deleteUrl: result.data.delete_url || null
+      }
     }
-    return imageInput
+    return { url: imageInput, deleteUrl: null }
   } catch (err) {
     console.error('Error uploading to imgbb:', err)
-    return imageInput
+    return { url: imageInput, deleteUrl: null }
   }
 }
 
