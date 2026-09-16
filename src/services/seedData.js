@@ -1,5 +1,32 @@
-import { getCategories, saveCategory, saveWord, getAllWords } from './db'
+import { getCategories, saveCategory, saveWord, getAllWords, getWordsByCategory } from './db'
 import { fetchFirebaseCategories, saveFirebaseCategory, saveFirebaseWord } from './firebase'
+
+export const applyHouseIllustrations = async () => {
+  try {
+    const houseIllustrationMap = {
+      'bedroom': '/images/house/bedroom.jpg',
+      'living room': '/images/house/living_room.jpg',
+      'kitchen': '/images/house/kitchen.jpg',
+      'dining room': '/images/house/dining_room.jpg',
+      'bathroom': '/images/house/bathroom.jpg'
+    }
+
+    const words = await getWordsByCategory('cat_house_parts')
+    for (const word of words) {
+      const key = word.englishWord?.toLowerCase().trim()
+      if (houseIllustrationMap[key]) {
+        const targetUrl = houseIllustrationMap[key]
+        if (!word.images || word.images.length === 0 || word.images[0] !== targetUrl) {
+          const restImages = (word.images || []).filter(img => img !== targetUrl)
+          word.images = [targetUrl, ...restImages]
+          await saveWord(word)
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error applying house illustrations:', err)
+  }
+}
 
 export const seedInitialDataIfEmpty = async () => {
   try {
@@ -7,6 +34,7 @@ export const seedInitialDataIfEmpty = async () => {
     const fbCategories = await fetchFirebaseCategories()
     if (fbCategories && fbCategories.length > 0) {
       console.log('Firebase Firestore already populated with categories.')
+      await applyHouseIllustrations()
       return
     }
   } catch (e) {
@@ -49,7 +77,7 @@ export const seedInitialDataIfEmpty = async () => {
   await saveCategory(catAnimals)
   await saveCategory(catFruits)
 
-  // WORDS FOR "PARTES DE LA CASA"
+  // WORDS FOR "PARTES DE LA CASA" WITH CLEAN COMIC ART
   const houseWords = [
     {
       id: 'w_bedroom',
@@ -57,9 +85,7 @@ export const seedInitialDataIfEmpty = async () => {
       englishWord: 'bedroom',
       spanishMeaning: 'Habitación / Dormitorio',
       images: [
-        'https://images.unsplash.com/photo-1540518614846-7ede433c517a?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=600&q=80'
+        '/images/house/bedroom.jpg'
       ]
     },
     {
@@ -68,8 +94,7 @@ export const seedInitialDataIfEmpty = async () => {
       englishWord: 'living room',
       spanishMeaning: 'Sala de estar',
       images: [
-        'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80'
+        '/images/house/living_room.jpg'
       ]
     },
     {
@@ -78,8 +103,7 @@ export const seedInitialDataIfEmpty = async () => {
       englishWord: 'kitchen',
       spanishMeaning: 'Cocina',
       images: [
-        'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=600&q=80'
+        '/images/house/kitchen.jpg'
       ]
     },
     {
@@ -88,8 +112,7 @@ export const seedInitialDataIfEmpty = async () => {
       englishWord: 'dining room',
       spanishMeaning: 'Comedor',
       images: [
-        'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=600&q=80'
+        '/images/house/dining_room.jpg'
       ]
     },
     {
@@ -98,8 +121,7 @@ export const seedInitialDataIfEmpty = async () => {
       englishWord: 'bathroom',
       spanishMeaning: 'Baño',
       images: [
-        'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=600&q=80'
+        '/images/house/bathroom.jpg'
       ]
     }
   ]
