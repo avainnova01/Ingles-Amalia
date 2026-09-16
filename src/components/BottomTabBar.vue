@@ -2,20 +2,20 @@
   <!-- Floating Bottom Capsule Dock (Hidden in Study view since Study has its own dedicated dock) -->
   <div 
     v-if="!$route.path.startsWith('/study')"
-    class="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 clean-dock rounded-full px-4 py-2 flex items-center gap-4 sm:gap-6 shadow-xl"
+    class="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white border border-slate-200/90 shadow-2xl rounded-full px-3 py-2 flex items-center gap-2"
   >
     <!-- Tab 1: Inicio / Categorías -->
     <router-link 
       to="/" 
       @click="vibrate"
       :class="[
-        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        'transition-all duration-200 flex items-center justify-center',
         $route.path === '/' 
-          ? 'bg-sky-500 text-white shadow-sm font-bold scale-105' 
-          : 'text-slate-500 hover:text-slate-800'
+          ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30 font-bold px-4 h-12 rounded-full gap-2 scale-102' 
+          : 'w-12 h-12 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 active:scale-90'
       ]"
     >
-      <LayoutGrid class="w-5 h-5" />
+      <LayoutGrid class="w-6 h-6" />
       <span v-if="$route.path === '/'" class="text-xs font-fredoka">Inicio</span>
     </router-link>
 
@@ -24,13 +24,13 @@
       :to="studyPath" 
       @click="vibrate"
       :class="[
-        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        'transition-all duration-200 flex items-center justify-center',
         $route.path.startsWith('/study') 
-          ? 'bg-purple-600 text-white shadow-sm font-bold scale-105' 
-          : 'text-slate-500 hover:text-slate-800'
+          ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 font-bold px-4 h-12 rounded-full gap-2 scale-102' 
+          : 'w-12 h-12 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 active:scale-90'
       ]"
     >
-      <GraduationCap class="w-5 h-5" />
+      <GraduationCap class="w-6 h-6" />
       <span v-if="$route.path.startsWith('/study')" class="text-xs font-fredoka">Estudiar</span>
     </router-link>
 
@@ -39,13 +39,13 @@
       :to="quizPath" 
       @click="vibrate"
       :class="[
-        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        'transition-all duration-200 flex items-center justify-center',
         $route.path.startsWith('/quiz') 
-          ? 'bg-amber-500 text-white shadow-sm font-bold scale-105' 
-          : 'text-slate-500 hover:text-slate-800'
+          ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 font-bold px-4 h-12 rounded-full gap-2 scale-102' 
+          : 'w-12 h-12 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 active:scale-90'
       ]"
     >
-      <Gamepad2 class="w-5 h-5" />
+      <Gamepad2 class="w-6 h-6" />
       <span v-if="$route.path.startsWith('/quiz')" class="text-xs font-fredoka">Test</span>
     </router-link>
 
@@ -54,13 +54,13 @@
       to="/admin" 
       @click="vibrate"
       :class="[
-        'flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-200',
+        'transition-all duration-200 flex items-center justify-center',
         $route.path.startsWith('/admin') 
-          ? 'bg-slate-800 text-white shadow-sm font-bold scale-105' 
-          : 'text-slate-500 hover:text-slate-800'
+          ? 'bg-slate-800 text-white shadow-md shadow-slate-800/30 font-bold px-4 h-12 rounded-full gap-2 scale-102' 
+          : 'w-12 h-12 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 active:scale-90'
       ]"
     >
-      <Settings class="w-5 h-5" />
+      <Settings class="w-6 h-6" />
       <span v-if="$route.path.startsWith('/admin')" class="text-xs font-fredoka">Admin</span>
     </router-link>
   </div>

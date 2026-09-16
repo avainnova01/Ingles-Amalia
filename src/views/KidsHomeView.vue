@@ -23,13 +23,42 @@
       </router-link>
     </div>
 
-    <!-- Loading State Skeleton -->
-    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
-      <div v-for="i in 4" :key="i" class="h-56 rounded-3xl bg-slate-200/60 animate-pulse border border-slate-200"></div>
-    </div>
+    <!-- Full Screen Native App Splash Loader -->
+    <transition name="fade">
+      <div 
+        v-if="loading" 
+        class="fixed inset-0 z-[100] bg-[#F8FAFC] flex flex-col items-center justify-center p-6 select-none"
+      >
+        <!-- Soft background radial glow -->
+        <div class="absolute w-80 h-80 rounded-full bg-gradient-to-tr from-sky-200/40 via-indigo-100/40 to-pink-200/40 blur-3xl animate-pulse pointer-events-none"></div>
+
+        <!-- Big App Icon Badge -->
+        <div class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[32px] bg-gradient-to-tr from-sky-400 via-indigo-500 to-pink-500 p-1 shadow-2xl shadow-indigo-500/20 mb-6 animate-spring">
+          <div class="w-full h-full bg-white rounded-[28px] flex items-center justify-center shadow-inner">
+            <span class="text-5xl sm:text-6xl animate-bounce-subtle">✨</span>
+          </div>
+        </div>
+
+        <!-- App Brand Name -->
+        <h1 class="text-3xl sm:text-4xl font-bold font-fredoka text-slate-800 tracking-tight text-center mb-2">
+          Inglés para Amalia
+        </h1>
+
+        <p class="text-sm sm:text-base text-slate-500 font-medium font-fredoka text-center max-w-xs mb-8">
+          Aprende jugando con imágenes y voz 🌟
+        </p>
+
+        <!-- Playful Animated Dots -->
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-sky-500 animate-bounce"></span>
+          <span class="w-3 h-3 rounded-full bg-indigo-500 animate-bounce" style="animation-delay: 0.15s"></span>
+          <span class="w-3 h-3 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 0.3s"></span>
+        </div>
+      </div>
+    </transition>
 
     <!-- 2-Column Mobile Category Cards -->
-    <div v-else-if="categories.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6 pb-20">
+    <div v-if="categories.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6 pb-20">
       <div 
         v-for="(cat, index) in categories" 
         :key="cat.id"
