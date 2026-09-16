@@ -137,14 +137,14 @@
 
         <!-- READ MODE QUESTION: Image to Word -->
         <div v-else class="flex flex-col items-center">
-          <h3 class="text-2xl sm:text-3xl font-bold font-fredoka text-slate-800 mb-4">
+          <h3 class="text-2xl sm:text-3xl font-bold font-fredoka text-slate-800 mb-3">
             ¿Cómo se llama esto en inglés?
           </h3>
-          <div class="w-60 h-44 rounded-2xl overflow-hidden bg-slate-50 border-2 border-slate-200 shadow-inner mb-2 flex items-center justify-center">
+          <div class="w-full max-w-[320px] sm:max-w-sm h-52 sm:h-64 rounded-3xl overflow-hidden bg-white border-2 border-slate-200 shadow-sm p-2 mb-3 flex items-center justify-center">
             <img 
               :src="currentQuestion.selectedImage" 
               :alt="currentQuestion.targetWord.englishWord"
-              class="w-full h-full object-contain"
+              class="w-full h-full object-contain rounded-2xl"
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100dvh-60px)] sm:h-[calc(100vh-70px)] flex flex-col justify-between p-3 sm:p-6 max-w-2xl mx-auto overflow-hidden relative select-none">
+  <div class="h-[100dvh] sm:h-[calc(100vh-70px)] flex flex-col justify-between p-3 sm:p-6 pb-2 sm:pb-6 max-w-2xl mx-auto overflow-hidden relative select-none">
     
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center bg-white rounded-3xl p-8 border border-slate-200">
@@ -11,24 +11,24 @@
     <template v-else-if="category && words.length > 0">
       
       <!-- Top Bar: Progress & Prev/Next Arrows -->
-      <div class="flex items-center justify-between px-2 pt-1 flex-shrink-0 z-10">
+      <div class="flex items-center justify-between px-1 pt-1 flex-shrink-0 z-10">
         <!-- Left: Circular / Pill Progress & Category Name -->
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2">
           <button 
             @click="goHome"
-            class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center shadow-sm transition active:scale-95"
+            class="w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center shadow-sm transition active:scale-90"
             title="Volver"
           >
-            <ChevronLeft class="w-5 h-5" />
+            <ChevronLeft class="w-6 h-6" />
           </button>
 
-          <div class="flex items-center gap-2 bg-white border border-slate-200/90 rounded-full px-3 py-1 shadow-sm">
-            <span class="text-sm">{{ category.icon || '🏠' }}</span>
-            <span class="text-xs font-bold font-fredoka text-slate-700 truncate max-w-[120px] sm:max-w-xs">
+          <div class="flex items-center gap-2 bg-white border border-slate-200/90 rounded-full px-4 py-2 shadow-sm">
+            <span class="text-base">{{ category.icon || '🏠' }}</span>
+            <span class="text-xs sm:text-sm font-bold font-fredoka text-slate-700 truncate max-w-[120px] sm:max-w-xs">
               {{ category.name }}
             </span>
             <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-            <span class="text-xs font-bold text-sky-600 font-fredoka">
+            <span class="text-xs sm:text-sm font-bold text-sky-600 font-fredoka">
               {{ currentIndex + 1 }}/{{ words.length }}
             </span>
           </div>
@@ -38,10 +38,10 @@
         <div class="flex items-center gap-1.5">
           <router-link 
             :to="`/memory/${props.categoryId}`"
-            class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 text-sky-600 hover:bg-sky-50 text-xs font-bold font-fredoka shadow-sm transition active:scale-95"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-slate-200/90 text-sky-600 hover:bg-sky-50 text-xs font-bold font-fredoka shadow-sm transition active:scale-95"
             title="Jugar Memorama de Sonidos"
           >
-            <Headphones class="w-3.5 h-3.5" />
+            <Headphones class="w-4 h-4" />
             <span>Memorama</span>
           </router-link>
 
@@ -49,55 +49,55 @@
             <button 
               @click="prevWord" 
               :disabled="currentIndex === 0"
-              class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
+              class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
               title="Anterior"
             >
-              <ChevronLeft class="w-4 h-4" />
+              <ChevronLeft class="w-5 h-5" />
             </button>
             <button 
               @click="nextWord" 
               :disabled="currentIndex === words.length - 1"
-              class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
+              class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
               title="Siguiente"
             >
-              <ChevronRight class="w-4 h-4" />
+              <ChevronRight class="w-5 h-5" />
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Center Stage: Pastel Blob + Centered Illustration + Text -->
+      <!-- Center Stage: Pastel Blob + Large Centered Illustration + Big Text -->
       <div 
-        class="flex-1 flex flex-col items-center justify-center my-auto relative w-full py-2"
+        class="flex-1 flex flex-col items-center justify-center my-auto relative w-full py-1"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
       >
-        <!-- Illustration Container with Organic Pastel Backdrop -->
-        <div class="relative w-64 h-64 sm:w-80 sm:h-80 max-h-[48vh] flex items-center justify-center mb-3">
+        <!-- Illustration Container with Generous Organic Pastel Backdrop -->
+        <div class="relative w-full max-w-[360px] sm:max-w-lg h-72 sm:h-96 max-h-[50vh] flex items-center justify-center my-auto">
           <!-- Soft Organic Pastel Blob (Rotates softly by index) -->
           <div 
             :style="{ backgroundColor: currentPastelBlob }"
-            class="absolute inset-2 sm:inset-4 rounded-[42px] blob-organic transition-all duration-500 shadow-inner"
+            class="absolute inset-1 sm:-inset-2 rounded-[52px] blob-organic transition-all duration-500 shadow-inner opacity-90"
           ></div>
 
-          <!-- The Illustration Image -->
+          <!-- The Illustration Image (Rounded card with elegant border & shadow) -->
           <img 
             v-if="mainCoverImage" 
             :src="mainCoverImage" 
             :alt="currentWord.englishWord" 
-            class="relative z-10 max-h-52 sm:max-h-64 max-w-[85%] object-contain drop-shadow-sm select-none pointer-events-none transition-transform duration-300 hover:scale-105"
+            class="relative z-10 max-h-[90%] max-w-[92%] object-contain rounded-3xl shadow-md border-2 border-white/90 drop-shadow-sm select-none pointer-events-none transition-transform duration-300 hover:scale-105"
             loading="eager"
           />
           <div v-else class="relative z-10 text-center p-4">
-            <span class="text-6xl sm:text-7xl block mb-2">🖼️</span>
-            <p class="text-slate-400 text-xs font-fredoka">Sin imagen asignada</p>
+            <span class="text-7xl sm:text-8xl block mb-2">🖼️</span>
+            <p class="text-slate-400 text-sm font-fredoka">Sin imagen asignada</p>
           </div>
 
           <!-- Speech feedback toast (when Amalia speaks into mic) -->
           <transition name="fade">
             <div 
               v-if="speechFeedback" 
-              class="absolute -top-3 z-20 px-4 py-1.5 rounded-full bg-emerald-500 text-white font-fredoka font-bold text-xs shadow-lg shadow-emerald-500/30 flex items-center gap-1.5 animate-bounce-subtle"
+              class="absolute -top-3 z-20 px-5 py-2 rounded-full bg-emerald-500 text-white font-fredoka font-bold text-sm shadow-lg shadow-emerald-500/30 flex items-center gap-2 animate-bounce-subtle"
             >
               <span>🎉</span>
               <span>{{ speechFeedback }}</span>
@@ -105,25 +105,25 @@
           </transition>
         </div>
 
-        <!-- English Word & Spanish Hint in Clean Legible Typography -->
-        <div class="text-center max-w-md px-4 mt-1 mb-2">
-          <h2 class="text-2xl sm:text-4xl font-bold font-fredoka text-slate-800 tracking-wide leading-tight">
+        <!-- English Word & Spanish Hint in Large, Joyful Typography -->
+        <div class="text-center max-w-md px-4 mt-2 mb-2">
+          <h2 class="text-4xl sm:text-6xl font-bold font-fredoka text-slate-800 tracking-wide leading-tight">
             {{ currentWord.englishWord }}
           </h2>
 
           <!-- Translation / Hint (Toggled by the lightbulb button or shown smoothly) -->
-          <div class="h-6 mt-1 flex items-center justify-center">
+          <div class="h-8 mt-1 flex items-center justify-center">
             <transition name="fade" mode="out-in">
               <p 
                 v-if="showTranslation" 
-                class="text-sm sm:text-base text-slate-500 font-medium font-fredoka"
+                class="text-base sm:text-2xl text-slate-500 font-medium font-fredoka"
               >
                 {{ currentWord.spanishMeaning }}
               </p>
               <button 
                 v-else 
                 @click="showTranslation = true"
-                class="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition"
+                class="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1.5 transition py-1 px-3 rounded-full bg-slate-100"
               >
                 <span>💡 Toca para ver traducción</span>
               </button>
@@ -133,23 +133,23 @@
 
       </div>
 
-      <!-- Floating Action Dock (Exact Style from Screenshots 2 & 3) -->
+      <!-- Floating Action Dock (Large, Kid-Friendly Buttons) -->
       <div class="flex items-center justify-center pb-3 flex-shrink-0 z-20">
-        <div class="bg-white border border-slate-200/90 shadow-xl rounded-full px-3 py-2 flex items-center gap-2 sm:gap-4">
+        <div class="bg-white border border-slate-200/90 shadow-2xl rounded-full px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center gap-3 sm:gap-5">
           
           <!-- 1. Home Button -->
           <button 
             @click="goHome"
-            class="w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-95"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-90"
             title="Inicio"
           >
-            <Home class="w-5 h-5" />
+            <Home class="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
 
           <!-- 2. Speed Toggle (Slow / Normal) -->
           <button 
             @click="toggleSpeed"
-            class="w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-95 text-lg"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-90 text-2xl sm:text-3xl"
             :title="speechRate < 0.9 ? 'Velocidad Lenta' : 'Velocidad Normal'"
           >
             <span v-if="speechRate < 0.9">🐢</span>
@@ -159,38 +159,38 @@
           <!-- 3. Audio Speaker Button -->
           <button 
             @click="speakCurrentWord"
-            class="w-10 h-10 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-95"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-90"
             title="Escuchar pronunciación"
           >
-            <Volume2 class="w-5 h-5" />
+            <Volume2 class="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
 
-          <!-- 4. Microphone Button (Primary Action - Vivid Blue Pill!) -->
+          <!-- 4. Microphone Button (Primary Action - Large Vivid Blue Pill!) -->
           <button 
             @click="startListening"
             :class="[
-              'w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 shadow-md',
+              'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl flex items-center justify-center transition-all duration-200 shadow-lg',
               isListening 
-                ? 'bg-rose-500 text-white animate-pulse shadow-rose-500/40 scale-105' 
-                : 'bg-sky-500 hover:bg-sky-600 text-white shadow-sky-500/30 active:scale-95'
+                ? 'bg-rose-500 text-white animate-pulse shadow-rose-500/50 scale-105' 
+                : 'bg-sky-500 hover:bg-sky-600 text-white shadow-sky-500/35 active:scale-90'
             ]"
             :title="isListening ? 'Escuchando tu voz...' : 'Practicar diciendo la palabra'"
           >
-            <Mic class="w-5 h-5" />
+            <Mic class="w-7 h-7 sm:w-8 sm:h-8" />
           </button>
 
           <!-- 5. Lightbulb / Hint Button (Toggle Spanish) -->
           <button 
             @click="showTranslation = !showTranslation"
             :class="[
-              'w-10 h-10 rounded-full flex items-center justify-center transition active:scale-95',
+              'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition active:scale-90',
               showTranslation 
                 ? 'bg-amber-100 text-amber-600 font-bold' 
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             ]"
             title="Ver / Ocultar traducción"
           >
-            <Lightbulb class="w-5 h-5" />
+            <Lightbulb class="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
 
         </div>

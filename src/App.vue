@@ -1,5 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col selection:bg-sky-500 selection:text-white relative overflow-x-hidden pb-24 sm:pb-0">
+  <div 
+    :class="[
+      'min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col selection:bg-sky-500 selection:text-white relative overflow-x-hidden',
+      $route.path.startsWith('/study') ? 'pb-0' : 'pb-24 sm:pb-0'
+    ]"
+  >
     <!-- Main Top Navbar -->
     <Navbar />
 

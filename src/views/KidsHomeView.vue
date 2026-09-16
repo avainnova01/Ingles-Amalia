@@ -48,9 +48,9 @@
               :to="`/memory/${cat.id}`"
               @click.stop
               title="Jugar Memorama de Sonidos"
-              class="w-7 h-7 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center transition border border-sky-200 active:scale-90"
+              class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center transition border border-sky-200 active:scale-90"
             >
-              <Headphones class="w-3.5 h-3.5" />
+              <Headphones class="w-4 h-4" />
             </router-link>
 
             <!-- 2. Quiz Button -->
@@ -58,9 +58,9 @@
               :to="`/quiz/${cat.id}`"
               @click.stop
               title="Hacer test de preguntas"
-              class="w-7 h-7 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition border border-amber-200 active:scale-90"
+              class="w-8 h-8 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition border border-amber-200 active:scale-90"
             >
-              <Gamepad2 class="w-3.5 h-3.5" />
+              <Gamepad2 class="w-4 h-4" />
             </router-link>
           </div>
         </div>
