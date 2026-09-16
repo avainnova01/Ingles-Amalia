@@ -421,7 +421,7 @@ const getOptionTextClass = (option) => {
 }
 
 const nextQuestion = () => {
-  if (currentQuestionIndex.value < questions.length - 1) {
+  if (currentQuestionIndex.value < questions.value.length - 1) {
     currentQuestionIndex.value++
     startCurrentQuestion()
   } else {
