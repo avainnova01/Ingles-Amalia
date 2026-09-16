@@ -144,3 +144,34 @@ export const playFanfareSound = () => {
     console.error('Audio synth error:', e)
   }
 }
+
+/**
+ * Plays a light, crisp pop/flip sound when a card is turned over
+ */
+export const playFlipSound = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    // Quick rising pitch click
+    osc.frequency.setValueAtTime(320, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.05)
+
+    gain.gain.setValueAtTime(0.12, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.06)
+  } catch (e) {
+    console.error('Audio flip error:', e)
+  }
+}
+

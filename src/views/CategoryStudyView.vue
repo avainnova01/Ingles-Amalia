@@ -34,24 +34,35 @@
           </div>
         </div>
 
-        <!-- Right: Clean Prev / Next Arrow Pills -->
-        <div class="flex items-center gap-1 bg-white border border-slate-200/90 rounded-full p-1 shadow-sm">
-          <button 
-            @click="prevWord" 
-            :disabled="currentIndex === 0"
-            class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
-            title="Anterior"
+        <!-- Right: Memorama Link & Clean Prev / Next Arrow Pills -->
+        <div class="flex items-center gap-1.5">
+          <router-link 
+            :to="`/memory/${props.categoryId}`"
+            class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 text-sky-600 hover:bg-sky-50 text-xs font-bold font-fredoka shadow-sm transition active:scale-95"
+            title="Jugar Memorama de Sonidos"
           >
-            <ChevronLeft class="w-4 h-4" />
-          </button>
-          <button 
-            @click="nextWord" 
-            :disabled="currentIndex === words.length - 1"
-            class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
-            title="Siguiente"
-          >
-            <ChevronRight class="w-4 h-4" />
-          </button>
+            <Headphones class="w-3.5 h-3.5" />
+            <span>Memorama</span>
+          </router-link>
+
+          <div class="flex items-center gap-1 bg-white border border-slate-200/90 rounded-full p-1 shadow-sm">
+            <button 
+              @click="prevWord" 
+              :disabled="currentIndex === 0"
+              class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
+              title="Anterior"
+            >
+              <ChevronLeft class="w-4 h-4" />
+            </button>
+            <button 
+              @click="nextWord" 
+              :disabled="currentIndex === words.length - 1"
+              class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 disabled:text-slate-300 hover:bg-slate-100 transition active:scale-90"
+              title="Siguiente"
+            >
+              <ChevronRight class="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -203,7 +214,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChevronLeft, ChevronRight, Home, Volume2, Mic, Lightbulb } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Home, Volume2, Mic, Lightbulb, Headphones } from 'lucide-vue-next'
 import { getCategoryById, getWordsByCategory } from '../services/db'
 import { speakEnglish, playCorrectSound } from '../services/audio'
 

@@ -3,6 +3,7 @@ import KidsHomeView from '../views/KidsHomeView.vue'
 import CategoryStudyView from '../views/CategoryStudyView.vue'
 import QuizView from '../views/QuizView.vue'
 import QuizResultView from '../views/QuizResultView.vue'
+import MemoryGameView from '../views/MemoryGameView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
 
 const routes = [
@@ -21,6 +22,12 @@ const routes = [
     path: '/quiz/:categoryId',
     name: 'quiz',
     component: QuizView,
+    props: true
+  },
+  {
+    path: '/memory/:categoryId',
+    name: 'memory',
+    component: MemoryGameView,
     props: true
   },
   {

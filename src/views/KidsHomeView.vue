@@ -42,14 +42,27 @@
             {{ wordCounts[cat.id] || 0 }} palabras
           </span>
 
-          <router-link 
-            :to="`/quiz/${cat.id}`"
-            @click.stop
-            title="Hacer test rápido"
-            class="w-7 h-7 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition border border-amber-200"
-          >
-            <Gamepad2 class="w-3.5 h-3.5" />
-          </router-link>
+          <div class="flex items-center gap-1.5">
+            <!-- 1. Memorama Button -->
+            <router-link 
+              :to="`/memory/${cat.id}`"
+              @click.stop
+              title="Jugar Memorama de Sonidos"
+              class="w-7 h-7 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center transition border border-sky-200 active:scale-90"
+            >
+              <Headphones class="w-3.5 h-3.5" />
+            </router-link>
+
+            <!-- 2. Quiz Button -->
+            <router-link 
+              :to="`/quiz/${cat.id}`"
+              @click.stop
+              title="Hacer test de preguntas"
+              class="w-7 h-7 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition border border-amber-200 active:scale-90"
+            >
+              <Gamepad2 class="w-3.5 h-3.5" />
+            </router-link>
+          </div>
         </div>
 
         <!-- Center: Big Illustration / Emoji with clean breathing room -->
@@ -91,7 +104,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Gamepad2 } from 'lucide-vue-next'
+import { Gamepad2, Headphones } from 'lucide-vue-next'
 import { getCategories, getWordsByCategory, subscribeCategories } from '../services/db'
 import { seedInitialDataIfEmpty } from '../services/seedData'
 
