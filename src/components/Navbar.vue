@@ -1,7 +1,7 @@
 <template>
   <header 
     :class="[
-      'sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 lg:px-8 py-3 pt-safe transition-all',
+      'sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 min-h-[64px] flex items-center transition-all',
       $route.path.startsWith('/study') ? 'hidden sm:flex' : 'flex'
     ]"
   >
