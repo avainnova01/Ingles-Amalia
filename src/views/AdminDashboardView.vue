@@ -678,9 +678,13 @@ const removeFormImage = (idx) => {
   const imgUrl = wordForm.value.images[idx]
   const deleteUrl = wordForm.value.deleteUrls?.[imgUrl]
 
+  if (!confirm('¿Estás seguro de que deseas quitar esta imagen?')) {
+    return
+  }
+
   if (deleteUrl) {
     const shouldOpen = confirm(
-      '¿Deseas abrir la página de ImgBB en una pestaña para confirmar la eliminación definitiva de esta imagen del servidor?'
+      'Esta foto tiene enlace de borrado en ImgBB.\n\n¿Deseas abrir la página de ImgBB en una pestaña para confirmarla y destruirla del servidor?'
     )
     if (shouldOpen) {
       window.open(deleteUrl, '_blank')
@@ -728,9 +732,15 @@ const removeImageFromWord = async (word, imgIdx) => {
   const imgUrl = word.images[imgIdx]
   const deleteUrl = word.deleteUrls?.[imgUrl]
 
+  // 1. Siempre pedir confirmación antes de eliminar
+  if (!confirm('¿Estás seguro de que deseas eliminar esta imagen de la palabra?')) {
+    return
+  }
+
+  // 2. Si tiene enlace de ImgBB, ofrecer abrirlo para borrar del servidor
   if (deleteUrl) {
     const shouldOpen = confirm(
-      '¿Deseas abrir la página de ImgBB en una pestaña para confirmar la eliminación definitiva de esta foto del servidor?'
+      'Esta foto tiene enlace de borrado en ImgBB.\n\n¿Deseas abrir la página de ImgBB en una pestaña para confirmarla y destruirla también del servidor?'
     )
     if (shouldOpen) {
       window.open(deleteUrl, '_blank')
